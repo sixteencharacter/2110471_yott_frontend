@@ -1,103 +1,378 @@
-import Image from "next/image";
+"use client"
+import React, { useState } from 'react';
+import { LogOut, Plus, MessageCircle, Users, Search, X, Hash, Lock } from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
+import { YOTTLoading } from '@/components/loading';
+import { apiClient } from '@/lib/apiClient';
 
-export default function Home() {
+// User Avatar Component
+const UserAvatar = ({ name, isOnline = false, size = 'md' } : {name : string , isOnline : boolean , size : string}) => {
+  const sizeClasses : Record<string,string> = {
+    xs: 'w-6 h-6 text-xs',
+    sm: 'w-8 h-8 text-xs',
+    md: 'w-10 h-10 text-sm',
+    lg: 'w-12 h-12 text-lg',
+    xl: 'w-14 h-14 text-lg',
+  };
+
+  const bgColors = [
+    'bg-purple-400',
+    'bg-blue-400',
+    'bg-green-400',
+    'bg-pink-400',
+    'bg-orange-400',
+    'bg-red-400',
+    'bg-indigo-400',
+    'bg-cyan-400',
+  ];
+
+  const colorIndex = name.charCodeAt(0) % bgColors.length;
+  const initials = name.charAt(0).toUpperCase();
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="relative">
+      <div className={`${sizeClasses[size]} ${bgColors[colorIndex]} rounded-full flex items-center justify-center font-bold text-white`}>
+        {initials}
+      </div>
+      {isOnline? (
+        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full" />
+      ) : (
+        <div className="absolute bottom-0 right-0 w-3 h-3 bg-gray-400 border-2 border-white rounded-full" />
+      )}
+    </div>
+  );
+};
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+// Create Direct Message Modal
+const CreateDMModal = ({ isOpen, onClose, onCreateDM, allUsers } : { isOpen : boolean, onClose : ()=>void, onCreateDM : (user : any)=>void, allUsers : any[] }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const filtered = allUsers.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-purple-600 border-2 border-purple-500 rounded-lg w-full max-w-md p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-serif font-bold text-white">New Direct Message</h2>
+          <button
+            onClick={onClose}
+            className="text-white/70 hover:text-white transition"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <X size={24} />
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <div className="relative">
+          <Search className="absolute left-3 top-3 text-white/50" size={20} />
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-purple-700 border border-purple-500 rounded-lg pl-10 pr-4 py-2 text-white placeholder-white/50 focus:outline-none focus:border-white"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+
+        <div className="space-y-2 max-h-64 overflow-y-auto">
+          {filtered.length === 0 ? (
+            <p className="text-center text-white/70 py-4">No users found</p>
+          ) : (
+            filtered.map((user) => (
+              <button
+                key={user.id}
+                onClick={() => {
+                  onCreateDM(user);
+                  onClose();
+                }}
+                className="w-full flex items-center gap-3 p-3 hover:bg-purple-500 rounded-lg transition text-left"
+              >
+                <UserAvatar name={user.name} isOnline={user.isOnline} size="md" />
+                <div className="flex-1">
+                  <p className="text-white font-serif font-semibold">{user.name}</p>
+                  <p className="text-xs text-white/60">
+                    {user.isOnline ? 'Online' : 'Offline'}
+                  </p>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Online Users Panel
+const OnlineUsersPanel = () => {
+  const onlineUsers = [
+    { id: 1, name: 'Arthur', isOnline: true },
+    { id: 2, name: 'Merlin', isOnline: true },
+    { id: 3, name: 'Guinevere', isOnline: true },
+    { id: 4, name: 'Lancelot', isOnline: true },
+    { id: 5, name: 'Gawain', isOnline: false },
+  ];
+
+  return (
+    <div className="bg-purple-500/20 border border-purple-300 rounded-lg p-4 space-y-4 h-full overflow-y-auto">
+      <h3 className="text-lg font-serif font-bold text-black flex items-center gap-2 sticky top-0">
+        <Users size={20} className="text-purple-400" />
+        Online ({onlineUsers.filter(u => u.isOnline).length})
+      </h3>
+      <div className="space-y-3">
+        {onlineUsers.map((user) => (
+          <div 
+            key={user.id} 
+            className="flex items-center gap-3 hover:bg-purple-400/20 p-2 rounded transition cursor-pointer"
+          >
+            <UserAvatar name={user.name} isOnline={user.isOnline} size="sm" />
+            <div className="flex-1 min-w-0">
+              <p className="text-purple-600 font-serif text-sm font-semibold truncate">{user.name}</p>
+              <p className="text-xs text-black/60">{user.isOnline ? 'Online' : 'Offline'}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Chat Room Item
+const ChatRoomItem = ({ room, isActive, onClick } : { room : any, isActive : boolean, onClick : ()=>void}) => {
+  const isGroup = room.type === 'group';
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left px-3 py-2 rounded-lg transition-all flex items-center gap-2 ${
+        isActive
+          ? 'bg-purple-400 text-white'
+          : 'text-white/70 hover:bg-purple-400/30 hover:text-white'
+      }`}
+    >
+      {isGroup ? (
+        <Hash size={18} className="flex-shrink-0" />
+      ) : (
+        <Lock size={18} className="flex-shrink-0" />
+      )}
+      <span className="font-serif font-semibold truncate flex-1">{room.name}</span>
+      {room.unread > 0 && (
+        <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+          {room.unread}
+        </div>
+      )}
+    </button>
+  );
+};
+
+// Main Chat Rooms Page
+export default function YOTTChatRooms() {
+  const {data,update,status} = useSession()
+  const [activeRoom, setActiveRoom] = useState(1);
+  const [showCreateDM, setShowCreateDM] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [chatRooms, setChatRooms] = useState<any[]>([]);
+  const [isInited,setInited] = useState<boolean>(false);
+  React.useEffect(()=>{
+    if(status == "authenticated") {
+      (async() => {
+        const res = await apiClient.get("/v1/chat",{
+          headers : {
+            'Authorization' : `Bearer ${data?.idToken}`
+          }
+        })
+        setChatRooms(res.data)
+        setInited(true)
+      })()
+    }
+  },[status])
+
+  const allUsers = [
+    { id: 1, name: 'Arthur', isOnline: true },
+    { id: 2, name: 'Merlin', isOnline: true },
+    { id: 3, name: 'Guinevere', isOnline: false },
+    { id: 4, name: 'Lancelot', isOnline: true },
+    { id: 5, name: 'Gawain', isOnline: false },
+    { id: 6, name: 'Bedivere', isOnline: true },
+    { id: 7, name: 'Kay', isOnline: false },
+  ];
+
+  const handleCreateDM = (user : any) => {
+    const existingDM = chatRooms.find(room => room.name === user.name && room.type === 'private');
+    
+    if (!existingDM) {
+      const newDM = {
+        id: chatRooms.length + 1,
+        name: user.name,
+        type: 'private',
+        lastMessage: 'No messages yet',
+        unread: 0,
+      };
+      setChatRooms([...chatRooms, newDM]);
+      setActiveRoom(newDM.id);
+    } else {
+      setActiveRoom(existingDM.id);
+    }
+  };
+
+  const filteredRooms = chatRooms.filter(room =>
+    room.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const groupRooms = filteredRooms.filter(r => r.type === 'group');
+  const privateRooms = filteredRooms.filter(r => r.type === 'private');
+
+  const activeRoomData = chatRooms.find(r => r.id === activeRoom);
+
+  return (
+    <div className="h-screen flex bg-purple-200 gap-4 p-4">
+      <YOTTLoading show={!isInited}/>
+      {/* Sidebar */}
+      <div className="w-72 bg-purple-500/90 rounded-lg flex flex-col shadow-lg">
+        {/* Header */}
+        <div className="border-b border-purple-500 p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-serif font-bold text-white">YOTT</h1>
+            <button
+              onClick={()=>signOut()}
+              className="p-2 hover:bg-purple-500 rounded-lg transition text-white/70 hover:text-white"
+              title="Sign Out"
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
+
+          {/* Search and Create */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 text-white/50" size={18} />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-purple-500 border border-purple-400 rounded-lg pl-10 pr-4 py-2 text-white placeholder-white/50 focus:outline-none focus:border-white text-sm"
+              />
+            </div>
+
+            <button
+              onClick={() => setShowCreateDM(true)}
+              className="w-full flex items-center justify-center gap-2 bg-purple-400 hover:bg-purple-300 text-white font-serif py-2 rounded-lg transition-all duration-300"
+            >
+              <Plus size={18} />
+              Direct Message
+            </button>
+          </div>
+        </div>
+
+        {/* Chat Rooms */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-4">
+          {/* Group Chats */}
+          {groupRooms.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-serif font-bold text-white/60 uppercase tracking-wider px-2 py-1">
+                Channels
+              </h3>
+              <div className="space-y-1">
+                {groupRooms.map(room => (
+                  <ChatRoomItem
+                    key={room.id}
+                    room={room}
+                    isActive={activeRoom === room.id}
+                    onClick={() => setActiveRoom(room.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Private Messages */}
+          {privateRooms.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-serif font-bold text-white/60 uppercase tracking-wider px-2 py-1">
+                Direct Messages
+              </h3>
+              <div className="space-y-1">
+                {privateRooms.map(room => (
+                  <ChatRoomItem
+                    key={room.id}
+                    room={room}
+                    isActive={activeRoom === room.id}
+                    onClick={() => setActiveRoom(room.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {filteredRooms.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-white/60 font-serif">No rooms found</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex gap-4">
+        {/* Chat Area */}
+        <div className="flex-1 bg-purple-100 rounded-lg shadow-lg flex flex-col">
+          {activeRoomData && (
+            <>
+              {/* Room Header */}
+              <div className="border-b border-purple-300 p-4 bg-white rounded-t-lg">
+                <div className="flex items-center gap-2">
+                  {activeRoomData.type === 'group' ? (
+                    <Hash className="text-purple-600" size={24} />
+                  ) : (
+                    <Lock className="text-purple-600" size={24} />
+                  )}
+                  <div>
+                    <p className="text-xl font-serif font-bold text-purple-900">
+                      {activeRoomData.name}
+                    </p>
+                    <p className="text-xs text-purple-600">
+                      {activeRoomData.lastMessage}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Room Content Area */}
+              <div className="flex-1 p-6 flex items-center justify-center">
+                <p className="text-purple-600 font-serif text-center text-lg">
+                  Welcome to {activeRoomData.name}
+                </p>
+              </div>
+
+              {/* Message Input */}
+              <div className="border-t border-purple-300 p-4 bg-white rounded-b-lg">
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  className="w-full bg-purple-100 border border-purple-300 rounded-lg px-4 py-3 text-purple-900 placeholder-purple-500 focus:outline-none focus:border-purple-600"
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Online Users Panel */}
+        <div className="w-80 bg-white rounded-lg shadow-lg">
+          <OnlineUsersPanel />
+        </div>
+      </div>
+
+      {/* Create DM Modal */}
+      <CreateDMModal
+        isOpen={showCreateDM}
+        onClose={() => setShowCreateDM(false)}
+        onCreateDM={handleCreateDM}
+        allUsers={allUsers}
+      />
     </div>
   );
 }
