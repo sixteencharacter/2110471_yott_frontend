@@ -113,7 +113,7 @@ const OnlineUsersPanel = ({ onlineUsers, userCount }: { onlineUsers: any[], user
     const userMap = new Map();
     onlineUsers.forEach(user => {
       // ใช้ keycloak_id หรือ username เป็น key
-      const key = user.keycloak_id || user.username;
+      const key = user.username;
       if (key && !userMap.has(key)) {
         userMap.set(key, user);
       }
@@ -124,15 +124,15 @@ const OnlineUsersPanel = ({ onlineUsers, userCount }: { onlineUsers: any[], user
     <div className="bg-purple-500/20 border border-purple-300 rounded-lg p-4 space-y-4 h-full overflow-y-auto">
       <h3 className="text-lg font-serif font-bold text-black flex items-center gap-2 sticky top-0">
         <Users size={20} className="text-purple-400" />
-        Online ({userCount})
+        Online ({uniqueUsers.length})
       </h3>
       <div className="space-y-3">
-        {onlineUsers.length === 0 ? (
+        {uniqueUsers.length === 0 ? (
           <div className="text-center text-purple-600 py-4">ไม่มีผู้ใช้ออนไลน์</div>
         ) : (
-          onlineUsers.map((user, index) => (
+          uniqueUsers.map((user, index) => (
             <div 
-              key={user.keycloak_id || user.username || index}
+              key={`${user.keycloak_id || user.username}-${index}`}
               className="flex items-center gap-3 hover:bg-purple-400/20 p-2 rounded transition cursor-pointer"
             >
               <UserAvatar name={user.username || user.display_name} isOnline={true} size="sm" />
