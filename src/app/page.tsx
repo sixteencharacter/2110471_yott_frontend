@@ -1,10 +1,10 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { LogOut, Plus, MessageCircle, Users, Search, X, Hash, Lock } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { YOTTLoading } from '@/components/loading';
 import { apiClient } from '@/lib/apiClient';
-
+import { io, Socket } from 'socket.io-client';
 // User Avatar Component
 const UserAvatar = ({ name, isOnline = false, size = 'md' } : {name : string , isOnline : boolean , size : string}) => {
   const sizeClasses : Record<string,string> = {
@@ -107,34 +107,43 @@ const CreateDMModal = ({ isOpen, onClose, onCreateDM, allUsers } : { isOpen : bo
 };
 
 // Online Users Panel
-const OnlineUsersPanel = () => {
-  const onlineUsers = [
-    { id: 1, name: 'Arthur', isOnline: true },
-    { id: 2, name: 'Merlin', isOnline: true },
-    { id: 3, name: 'Guinevere', isOnline: true },
-    { id: 4, name: 'Lancelot', isOnline: true },
-    { id: 5, name: 'Gawain', isOnline: false },
-  ];
-
+// Online Users Panel
+const OnlineUsersPanel = ({ onlineUsers, userCount }: { onlineUsers: any[], userCount: number }) => {
+  const uniqueUsers = React.useMemo(() => {
+    const userMap = new Map();
+    onlineUsers.forEach(user => {
+      // ใช้ keycloak_id หรือ username เป็น key
+      const key = user.keycloak_id || user.username;
+      if (key && !userMap.has(key)) {
+        userMap.set(key, user);
+      }
+    });
+    return Array.from(userMap.values());
+  }, [onlineUsers]);
   return (
     <div className="bg-purple-500/20 border border-purple-300 rounded-lg p-4 space-y-4 h-full overflow-y-auto">
       <h3 className="text-lg font-serif font-bold text-black flex items-center gap-2 sticky top-0">
         <Users size={20} className="text-purple-400" />
-        Online ({onlineUsers.filter(u => u.isOnline).length})
+        Online ({userCount})
       </h3>
       <div className="space-y-3">
-        {onlineUsers.map((user) => (
-          <div 
-            key={user.id} 
-            className="flex items-center gap-3 hover:bg-purple-400/20 p-2 rounded transition cursor-pointer"
-          >
-            <UserAvatar name={user.name} isOnline={user.isOnline} size="sm" />
-            <div className="flex-1 min-w-0">
-              <p className="text-purple-600 font-serif text-sm font-semibold truncate">{user.name}</p>
-              <p className="text-xs text-black/60">{user.isOnline ? 'Online' : 'Offline'}</p>
+        {onlineUsers.length === 0 ? (
+          <div className="text-center text-purple-600 py-4">ไม่มีผู้ใช้ออนไลน์</div>
+        ) : (
+          onlineUsers.map((user, index) => (
+            <div 
+              key={user.keycloak_id || user.username || index}
+              className="flex items-center gap-3 hover:bg-purple-400/20 p-2 rounded transition cursor-pointer"
+            >
+              <UserAvatar name={user.username || user.display_name} isOnline={true} size="sm" />
+              <div className="flex-1 min-w-0">
+                <p className="text-purple-600 font-serif text-sm font-semibold truncate">
+                  {user.username}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
@@ -176,6 +185,65 @@ export default function YOTTChatRooms() {
   const [searchTerm, setSearchTerm] = useState('');
   const [chatRooms, setChatRooms] = useState<any[]>([]);
   const [isInited,setInited] = useState<boolean>(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
+  const [userCount, setUserCount] = useState<number>(0);
+
+  // Initialize socket connection
+  useEffect(() => {
+  if (status !== "authenticated" || !data?.idToken) return;
+
+  const socketConnection = io("http://localhost:8000", {
+    // เพิ่ม options เพื่อให้ socket reconnect อัตโนมัติ
+    autoConnect: true,
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionAttempts: 5,
+    timeout: 50000,
+  });
+  setSocket(socketConnection);
+
+  // Socket event listeners
+  socketConnection.on('connect', () => {
+    console.log('Connected to server');
+    
+  });
+
+  socketConnection.on('disconnect', () => {
+    console.log('Disconnected from server');
+  });
+
+  socketConnection.on('sent_token', () => {
+    console.log('Token sent to server');
+    socketConnection.emit('authenticate', { token: data.idToken });
+    console.log('Authenticating with token:', data.idToken);
+  });
+
+  socketConnection.on('error', (error) => {
+    console.error('Socket error:', error);
+  });
+
+  // Online users update event listener
+  socketConnection.on('online_users_update', (data) => {
+    console.log('อัพเดตรายชื่อผู้ใช้:', data);
+    
+    // อัพเดตจำนวนคน
+    setUserCount(data.total_count);
+    
+    // อัพเดตรายชื่อผู้ใช้
+    setOnlineUsers(data.users || []);
+  });
+
+  // Cleanup on component unmount
+  return () => {
+    socketConnection.disconnect();
+  };
+}, [status, data?.idToken]); // เพิ่ม dependency
+
+
+
+
+
   React.useEffect(()=>{
     if(status == "authenticated") {
       (async() => {
@@ -362,7 +430,7 @@ export default function YOTTChatRooms() {
 
         {/* Online Users Panel */}
         <div className="w-80 bg-white rounded-lg shadow-lg">
-          <OnlineUsersPanel />
+          <OnlineUsersPanel onlineUsers={onlineUsers} userCount={userCount} />
         </div>
       </div>
 
