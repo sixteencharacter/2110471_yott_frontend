@@ -156,9 +156,11 @@ const CreateDMModal = ({
 const OnlineUsersPanel = ({
     onlineUsers,
     userCount,
+    currentUser,
 }: {
     onlineUsers: any[];
     userCount: number;
+    currentUser?: any;
 }) => {
     const uniqueUsers = React.useMemo(() => {
         const userMap = new Map();
@@ -178,9 +180,27 @@ const OnlineUsersPanel = ({
                 Online ({uniqueUsers.length})
             </h3>
             <div className="space-y-3">
+                {/* Current User (Me) - Always at top */}
+                {currentUser && (
+                    <div className="flex items-center gap-3 bg-purple-400/30 p-2 rounded border-2 border-purple-400">
+                        <UserAvatar
+                            name={currentUser.name || "User"}
+                            isOnline={true}
+                            size="sm"
+                        />
+                        <div className="flex-1 min-w-0">
+                            <p className="text-purple-600 font-serif text-sm font-semibold truncate">
+                                {currentUser.name || "Unknown User"}
+                            </p>
+                            <p className="text-xs text-purple-500">(me)</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Other Online Users */}
                 {uniqueUsers.length === 0 ? (
                     <div className="text-center text-purple-600 py-4">
-                        ไม่มีผู้ใช้ออนไลน์
+                        {!currentUser && "ไม่มีผู้ใช้ออนไลน์"}
                     </div>
                 ) : (
                     uniqueUsers.map((user, index) => (
@@ -543,6 +563,7 @@ export default function YOTTChatRooms() {
                     <OnlineUsersPanel
                         onlineUsers={onlineUsers}
                         userCount={userCount}
+                        currentUser={data?.user}
                     />
                 </div>
             </div>
