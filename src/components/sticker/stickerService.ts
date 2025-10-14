@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
-import { StickerPacks } from "./stickerData";
+import { Sticker, StickerPacks } from "./stickerData";
 
 export class StickerService {
     /**
@@ -50,7 +50,7 @@ export class StickerService {
      */
     static async sendStickerMessage(
         roomId: number,
-        sticker: any,
+        sticker: Sticker,
         packId: string,
         token: string
     ): Promise<any> {
