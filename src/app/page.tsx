@@ -379,15 +379,26 @@ export default function YOTTChatRooms() {
         }
     }, [status]);
 
-    const allUsers = [
-        { id: 1, name: "Arthur", isOnline: true },
-        { id: 2, name: "Merlin", isOnline: true },
-        { id: 3, name: "Guinevere", isOnline: false },
-        { id: 4, name: "Lancelot", isOnline: true },
-        { id: 5, name: "Gawain", isOnline: false },
-        { id: 6, name: "Bedivere", isOnline: true },
-        { id: 7, name: "Kay", isOnline: false },
-    ];
+    // Transform online users for CreateDM modal, excluding current user
+    const availableUsers = React.useMemo(() => {
+        return onlineUsers
+            .filter((user) => {
+                // Filter out current user from DM creation list
+                if (!data?.user) return true;
+
+                return !(
+                    user.username === data.user.name ||
+                    user.display_name === data.user.name ||
+                    user.name === data.user.name ||
+                    user.email === data.user.email
+                );
+            })
+            .map((user, index) => ({
+                id: user.keycloak_id || user.username || index,
+                name: user.username || user.display_name || "Unknown User",
+                isOnline: true, // All users in onlineUsers are online
+            }));
+    }, [onlineUsers, data?.user]);
 
     const handleCreateDM = (user: any) => {
         const existingDM = chatRooms.find(
@@ -589,7 +600,7 @@ export default function YOTTChatRooms() {
                 isOpen={showCreateDM}
                 onClose={() => setShowCreateDM(false)}
                 onCreateDM={handleCreateDM}
-                allUsers={allUsers}
+                allUsers={availableUsers}
             />
 
             {/* Sticker Modal */}
