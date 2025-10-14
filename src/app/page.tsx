@@ -171,13 +171,29 @@ const OnlineUsersPanel = ({
                 userMap.set(key, user);
             }
         });
-        return Array.from(userMap.values());
-    }, [onlineUsers]);
+
+        // Filter out current user from the online users list to prevent duplication
+        const filteredUsers = Array.from(userMap.values()).filter((user) => {
+            if (!currentUser) return true;
+
+            // Try multiple fields to match the current user
+            return !(
+                user.username === currentUser.name ||
+                user.display_name === currentUser.name ||
+                user.name === currentUser.name ||
+                user.email === currentUser.email ||
+                user.username === currentUser.username
+            );
+        });
+
+        return filteredUsers;
+    }, [onlineUsers, currentUser]);
     return (
         <div className="bg-purple-500/20 border border-purple-300 rounded-lg p-4 space-y-4 h-full overflow-y-auto">
             <h3 className="text-lg font-serif font-bold text-black flex items-center gap-2 sticky top-0">
                 <Users size={20} className="text-purple-400" />
-                Online ({uniqueUsers.length})
+                Online (
+                {currentUser ? uniqueUsers.length + 1 : uniqueUsers.length})
             </h3>
             <div className="space-y-3">
                 {/* Current User (Me) - Always at top */}
