@@ -17,6 +17,8 @@ export default function ChatRoom() {
     const searchParams = useSearchParams()
     const roomId = searchParams.get("roomId")
 
+    console.log("Chat Room - Status:", status, "RoomId:", roomId)
+
     const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : 1)
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
@@ -90,15 +92,29 @@ export default function ChatRoom() {
 
     // Chat room fetch effect
     React.useEffect(() => {
+        console.log(
+            "Chat Room useEffect - Status:",
+            status,
+            "Token:",
+            !!data?.idToken
+        )
         if (status == "authenticated") {
             ;(async () => {
-                const res = await apiClient.get("/v1/chat", {
-                    headers: {
-                        Authorization: `Bearer ${data?.idToken}`,
-                    },
-                })
-                setChatRooms(res.data)
-                setInited(true)
+                try {
+                    const res = await apiClient.get("/v1/chat", {
+                        headers: {
+                            Authorization: `Bearer ${data?.idToken}`,
+                        },
+                    })
+                    setChatRooms(res.data)
+                    setInited(true)
+                } catch (error) {
+                    console.error(
+                        "Failed to fetch chat rooms in chat page:",
+                        error
+                    )
+                    setInited(true)
+                }
             })()
         }
     }, [status])
