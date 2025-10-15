@@ -1,5 +1,5 @@
-"use client";
-import React, { useState, useEffect } from "react";
+"use client"
+import React, { useState, useEffect } from "react"
 import {
     LogOut,
     Plus,
@@ -11,21 +11,21 @@ import {
     Lock,
     Play,
     Smile,
-} from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
-import { YOTTLoading } from "@/components/loading";
-import { apiClient } from "@/lib/apiClient";
-import { StickerModal, useSticker } from "@/components/sticker";
-import { io, Socket } from "socket.io-client";
+} from "lucide-react"
+import { signOut, useSession } from "next-auth/react"
+import { YOTTLoading } from "@/components/loading"
+import { apiClient } from "@/lib/apiClient"
+import { StickerModal, useSticker } from "@/components/sticker"
+import { io, Socket } from "socket.io-client"
 // User Avatar Component
 const UserAvatar = ({
     name,
     isOnline = false,
     size = "md",
 }: {
-    name: string;
-    isOnline: boolean;
-    size: string;
+    name: string
+    isOnline: boolean
+    size: string
 }) => {
     const sizeClasses: Record<string, string> = {
         xs: "w-6 h-6 text-xs",
@@ -33,7 +33,7 @@ const UserAvatar = ({
         md: "w-10 h-10 text-sm",
         lg: "w-12 h-12 text-lg",
         xl: "w-14 h-14 text-lg",
-    };
+    }
 
     const bgColors = [
         "bg-purple-400",
@@ -44,10 +44,10 @@ const UserAvatar = ({
         "bg-red-400",
         "bg-indigo-400",
         "bg-cyan-400",
-    ];
+    ]
 
-    const colorIndex = name.charCodeAt(0) % bgColors.length;
-    const initials = name.charAt(0).toUpperCase();
+    const colorIndex = name.charCodeAt(0) % bgColors.length
+    const initials = name.charAt(0).toUpperCase()
 
     return (
         <div className="relative">
@@ -62,8 +62,8 @@ const UserAvatar = ({
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-gray-400 border-2 border-white rounded-full" />
             )}
         </div>
-    );
-};
+    )
+}
 
 // Create Direct Message Modal
 const CreateDMModal = ({
@@ -72,18 +72,18 @@ const CreateDMModal = ({
     onCreateDM,
     allUsers,
 }: {
-    isOpen: boolean;
-    onClose: () => void;
-    onCreateDM: (user: any) => void;
-    allUsers: any[];
+    isOpen: boolean
+    onClose: () => void
+    onCreateDM: (user: any) => void
+    allUsers: any[]
 }) => {
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm, setSearchTerm] = useState("")
 
     const filtered = allUsers.filter((user) =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    )
 
-    if (!isOpen) return null;
+    if (!isOpen) return null
 
     return (
         <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -124,8 +124,8 @@ const CreateDMModal = ({
                             <button
                                 key={user.id}
                                 onClick={() => {
-                                    onCreateDM(user);
-                                    onClose();
+                                    onCreateDM(user)
+                                    onClose()
                                 }}
                                 className="w-full flex items-center gap-3 p-3 hover:bg-purple-500 rounded-lg transition text-left"
                             >
@@ -148,8 +148,8 @@ const CreateDMModal = ({
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}
 
 // Online Users Panel
 // Online Users Panel
@@ -158,23 +158,23 @@ const OnlineUsersPanel = ({
     userCount,
     currentUser,
 }: {
-    onlineUsers: any[];
-    userCount: number;
-    currentUser?: any;
+    onlineUsers: any[]
+    userCount: number
+    currentUser?: any
 }) => {
     const uniqueUsers = React.useMemo(() => {
-        const userMap = new Map();
+        const userMap = new Map()
         onlineUsers.forEach((user) => {
             // ใช้ keycloak_id หรือ username เป็น key
-            const key = user.username;
+            const key = user.username
             if (key && !userMap.has(key)) {
-                userMap.set(key, user);
+                userMap.set(key, user)
             }
-        });
+        })
 
         // Filter out current user from the online users list to prevent duplication
         const filteredUsers = Array.from(userMap.values()).filter((user) => {
-            if (!currentUser) return true;
+            if (!currentUser) return true
 
             // Try multiple fields to match the current user
             return !(
@@ -183,11 +183,11 @@ const OnlineUsersPanel = ({
                 user.name === currentUser.name ||
                 user.email === currentUser.email ||
                 user.username === currentUser.username
-            );
-        });
+            )
+        })
 
-        return filteredUsers;
-    }, [onlineUsers, currentUser]);
+        return filteredUsers
+    }, [onlineUsers, currentUser])
     return (
         <div className="bg-purple-500/20 border border-purple-300 rounded-lg p-4 space-y-4 h-full overflow-y-auto">
             <h3 className="text-lg font-serif font-bold text-black flex items-center gap-2 sticky top-0">
@@ -241,8 +241,8 @@ const OnlineUsersPanel = ({
                 )}
             </div>
         </div>
-    );
-};
+    )
+}
 
 // Chat Room Item
 const ChatRoomItem = ({
@@ -250,11 +250,11 @@ const ChatRoomItem = ({
     isActive,
     onClick,
 }: {
-    room: any;
-    isActive: boolean;
-    onClick: () => void;
+    room: any
+    isActive: boolean
+    onClick: () => void
 }) => {
-    const isGroup = room.type === "group";
+    const isGroup = room.type === "group"
 
     return (
         <button
@@ -279,24 +279,24 @@ const ChatRoomItem = ({
                 </div>
             )}
         </button>
-    );
-};
+    )
+}
 
 // Main Chat Rooms Page
 export default function YOTTChatRooms() {
-    const { data, update, status } = useSession();
-    const [activeRoom, setActiveRoom] = useState(1);
-    const [showCreateDM, setShowCreateDM] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [chatRooms, setChatRooms] = useState<any[]>([]);
-    const [isInited, setInited] = useState<boolean>(false);
-    const [socket, setSocket] = useState<Socket | null>(null);
-    const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
-    const [userCount, setUserCount] = useState<number>(0);
+    const { data, update, status } = useSession()
+    const [activeRoom, setActiveRoom] = useState(1)
+    const [showCreateDM, setShowCreateDM] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
+    const [chatRooms, setChatRooms] = useState<any[]>([])
+    const [isInited, setInited] = useState<boolean>(false)
+    const [socket, setSocket] = useState<Socket | null>(null)
+    const [onlineUsers, setOnlineUsers] = useState<any[]>([])
+    const [userCount, setUserCount] = useState<number>(0)
 
     // Initialize socket connection
     useEffect(() => {
-        if (status !== "authenticated" || !data?.idToken) return;
+        if (status !== "authenticated" || !data?.idToken) return
 
         const socketConnection = io("http://localhost:8000", {
             // เพิ่ม options เพื่อให้ socket reconnect อัตโนมัติ
@@ -305,47 +305,47 @@ export default function YOTTChatRooms() {
             reconnectionDelay: 1000,
             reconnectionAttempts: 5,
             timeout: 50000,
-        });
-        setSocket(socketConnection);
+        })
+        setSocket(socketConnection)
 
         // Socket event listeners
         socketConnection.on("connect", () => {
-            console.log("Connected to server");
-        });
+            console.log("Connected to server")
+        })
 
         socketConnection.on("disconnect", () => {
-            console.log("Disconnected from server");
-        });
+            console.log("Disconnected from server")
+        })
 
         socketConnection.on("sent_token", () => {
-            console.log("Token sent to server");
-            socketConnection.emit("authenticate", { token: data.idToken });
-            console.log("Authenticating with token:", data.idToken);
-        });
+            console.log("Token sent to server")
+            socketConnection.emit("authenticate", { token: data.idToken })
+            console.log("Authenticating with token:", data.idToken)
+        })
 
         socketConnection.on("error", (error) => {
-            console.error("Socket error:", error);
-        });
+            console.error("Socket error:", error)
+        })
 
         // Online users update event listener
         socketConnection.on("online_users_update", (data) => {
-            console.log("อัพเดตรายชื่อผู้ใช้:", data);
+            console.log("อัพเดตรายชื่อผู้ใช้:", data)
 
             // อัพเดตจำนวนคน
-            setUserCount(data.total_count);
+            setUserCount(data.total_count)
 
             // อัพเดตรายชื่อผู้ใช้
-            setOnlineUsers(data.users || []);
-        });
+            setOnlineUsers(data.users || [])
+        })
 
         // Cleanup on component unmount
         return () => {
-            socketConnection.disconnect();
-        };
-    }, [status, data?.idToken]); // เพิ่ม dependency
+            socketConnection.disconnect()
+        }
+    }, [status, data?.idToken]) // เพิ่ม dependency
 
     // Initialize sticker functionality
-    const activeRoomData = chatRooms.find((r) => r.id === activeRoom);
+    const activeRoomData = chatRooms.find((r) => r.id === activeRoom)
     const {
         stickerPacks,
         selectedPack,
@@ -360,50 +360,50 @@ export default function YOTTChatRooms() {
         token: data?.idToken,
         roomId: activeRoomData?.id,
         onStickerSent: (sticker) => {
-            console.log("Sticker sent:", sticker);
+            console.log("Sticker sent:", sticker)
         },
-    });
+    })
 
     // Chat room fetch effect
     React.useEffect(() => {
         if (status == "authenticated") {
-            (async () => {
+            ;(async () => {
                 const res = await apiClient.get("/v1/chat", {
                     headers: {
                         Authorization: `Bearer ${data?.idToken}`,
                     },
-                });
-                setChatRooms(res.data);
-                setInited(true);
-            })();
+                })
+                setChatRooms(res.data)
+                setInited(true)
+            })()
         }
-    }, [status]);
+    }, [status])
 
     // Transform online users for CreateDM modal, excluding current user
     const availableUsers = React.useMemo(() => {
         return onlineUsers
             .filter((user) => {
                 // Filter out current user from DM creation list
-                if (!data?.user) return true;
+                if (!data?.user) return true
 
                 return !(
                     user.username === data.user.name ||
                     user.display_name === data.user.name ||
                     user.name === data.user.name ||
                     user.email === data.user.email
-                );
+                )
             })
             .map((user, index) => ({
                 id: user.keycloak_id || user.username || index,
                 name: user.username || user.display_name || "Unknown User",
                 isOnline: true, // All users in onlineUsers are online
-            }));
-    }, [onlineUsers, data?.user]);
+            }))
+    }, [onlineUsers, data?.user])
 
     const handleCreateDM = (user: any) => {
         const existingDM = chatRooms.find(
             (room) => room.name === user.name && room.type === "private"
-        );
+        )
 
         if (!existingDM) {
             const newDM = {
@@ -412,20 +412,20 @@ export default function YOTTChatRooms() {
                 type: "private",
                 lastMessage: "No messages yet",
                 unread: 0,
-            };
-            setChatRooms([...chatRooms, newDM]);
-            setActiveRoom(newDM.id);
+            }
+            setChatRooms([...chatRooms, newDM])
+            setActiveRoom(newDM.id)
         } else {
-            setActiveRoom(existingDM.id);
+            setActiveRoom(existingDM.id)
         }
-    };
+    }
 
     const filteredRooms = chatRooms.filter((room) =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    )
 
-    const groupRooms = filteredRooms.filter((r) => r.type === "group");
-    const privateRooms = filteredRooms.filter((r) => r.type === "private");
+    const groupRooms = filteredRooms.filter((r) => r.type === "group")
+    const privateRooms = filteredRooms.filter((r) => r.type === "private")
 
     return (
         <div className="h-screen flex bg-purple-200 gap-4 p-4">
@@ -613,5 +613,5 @@ export default function YOTTChatRooms() {
                 onPackChange={setSelectedPack}
             />
         </div>
-    );
+    )
 }
