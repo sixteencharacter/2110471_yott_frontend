@@ -1,69 +1,211 @@
-"use client";
-import { signOut, useSession } from "next-auth/react";
-import { useState } from "react";
-import { Plus, LogOut, MessageCircle } from "lucide-react";
+"use client"
+import React, { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { YOTTLoading } from "@/components/loading"
+import { apiClient } from "@/lib/apiClient"
+import { StickerModal, useSticker } from "@/components/sticker"
+import { io, Socket } from "socket.io-client"
+import Sidebar from "@/components/Sidebar"
+import OnlineUsersPanel from "@/components/OnlineUsersPanel"
+import ChatSection from "@/components/ChatSection"
+import CreateDMModal from "@/components/CreateDMModal"
 
-export default function ChatHome() {
-    const { data, status } = useSession();
-    const [chatRooms, setChatRooms] = useState([
-        { id: 1, name: "General", lastMessage: "Welcome to General chat!" },
-        {
-            id: 2,
-            name: "Tech Talk",
-            lastMessage: "Discussing the latest in tech.",
+export default function ChatRoom() {
+    const { data, update, status } = useSession()
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const roomId = searchParams.get("roomId")
+
+    const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : 1)
+    const [showCreateDM, setShowCreateDM] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
+    const [chatRooms, setChatRooms] = useState<any[]>([])
+    const [isInited, setInited] = useState<boolean>(false)
+    const [socket, setSocket] = useState<Socket | null>(null)
+    const [onlineUsers, setOnlineUsers] = useState<any[]>([])
+    const [userCount, setUserCount] = useState<number>(0)
+
+    // Initialize socket connection
+    useEffect(() => {
+        if (status !== "authenticated" || !data?.idToken) return
+
+        const socketConnection = io("http://localhost:8000", {
+            autoConnect: true,
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 5,
+            timeout: 50000,
+        })
+        setSocket(socketConnection)
+
+        socketConnection.on("connect", () => {
+            console.log("Connected to server")
+        })
+
+        socketConnection.on("disconnect", () => {
+            console.log("Disconnected from server")
+        })
+
+        socketConnection.on("sent_token", () => {
+            console.log("Token sent to server")
+            socketConnection.emit("authenticate", { token: data.idToken })
+            console.log("Authenticating with token:", data.idToken)
+        })
+
+        socketConnection.on("error", (error) => {
+            console.error("Socket error:", error)
+        })
+
+        socketConnection.on("online_users_update", (data) => {
+            console.log("อัพเดตรายชื่อผู้ใช้:", data)
+            setUserCount(data.total_count)
+            setOnlineUsers(data.users || [])
+        })
+
+        return () => {
+            socketConnection.disconnect()
+        }
+    }, [status, data?.idToken])
+
+    // Initialize sticker functionality
+    const activeRoomData = chatRooms.find((r) => r.id === activeRoom)
+    const {
+        stickerPacks,
+        selectedPack,
+        setSelectedPack,
+        showModal: showStickerModal,
+        openModal: openStickerModal,
+        closeModal: closeStickerModal,
+        handleSelectSticker,
+        loading: stickerLoading,
+        error: stickerError,
+    } = useSticker({
+        token: data?.idToken,
+        roomId: activeRoomData?.id,
+        onStickerSent: (sticker) => {
+            console.log("Sticker sent:", sticker)
         },
-        { id: 3, name: "Random", lastMessage: "Share anything here!" },
-    ]);
+    })
+
+    // Chat room fetch effect
+    React.useEffect(() => {
+        if (status == "authenticated") {
+            ;(async () => {
+                const res = await apiClient.get("/v1/chat", {
+                    headers: {
+                        Authorization: `Bearer ${data?.idToken}`,
+                    },
+                })
+                setChatRooms(res.data)
+                setInited(true)
+            })()
+        }
+    }, [status])
+
+    // Transform online users for CreateDM modal, excluding current user
+    const availableUsers = React.useMemo(() => {
+        return onlineUsers
+            .filter((user) => {
+                if (!data?.user) return true
+                return !(
+                    user.username === data.user.name ||
+                    user.display_name === data.user.name ||
+                    user.name === data.user.name ||
+                    user.email === data.user.email
+                )
+            })
+            .map((user, index) => ({
+                id: user.keycloak_id || user.username || index,
+                name: user.username || user.display_name || "Unknown User",
+                isOnline: true,
+            }))
+    }, [onlineUsers, data?.user])
+
+    const handleCreateDM = (user: any) => {
+        const existingDM = chatRooms.find(
+            (room) => room.name === user.name && room.type === "private"
+        )
+
+        if (!existingDM) {
+            const newDM = {
+                id: chatRooms.length + 1,
+                name: user.name,
+                type: "private",
+                lastMessage: "No messages yet",
+                unread: 0,
+            }
+            setChatRooms([...chatRooms, newDM])
+            setActiveRoom(newDM.id)
+        } else {
+            setActiveRoom(existingDM.id)
+        }
+    }
+
+    const filteredRooms = chatRooms.filter((room) =>
+        room.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
+    const groupRooms = filteredRooms.filter((r) => r.type === "group")
+    const privateRooms = filteredRooms.filter((r) => r.type === "private")
+
+    // Handle room selection within chat page
+    const handleRoomSelect = (roomId: number) => {
+        setActiveRoom(roomId)
+        router.push(`/chat?roomId=${roomId}`)
+    }
 
     return (
-        <div className="h-screen flex bg-gray-100">
+        <div className="h-screen flex bg-purple-200 gap-4 p-4">
+            <YOTTLoading show={!isInited} />
+
             {/* Sidebar */}
-            <div className="w-64 bg-indigo-600 text-white flex flex-col">
-                <div className="p-4 border-b border-indigo-500">
-                    <h1 className="text-2xl font-bold">Chat App</h1>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                    <ul>
-                        {chatRooms.map((room) => (
-                            <li
-                                key={room.id}
-                                className="p-4 hover:bg-indigo-500 cursor-pointer border-b border-indigo-500"
-                            >
-                                <div className="font-semibold">{room.name}</div>
-                                <div className="text-sm text-indigo-200 truncate">
-                                    {room.lastMessage}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="p-4 border-t border-indigo-500">
-                    <button
-                        onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                        className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md flex items-center justify-center gap-2"
-                    >
-                        <LogOut size={18} /> Sign Out
-                    </button>
+            <Sidebar
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                showCreateDM={showCreateDM}
+                setShowCreateDM={setShowCreateDM}
+                groupRooms={groupRooms}
+                privateRooms={privateRooms}
+                activeRoom={activeRoom}
+                setActiveRoom={handleRoomSelect}
+            />
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex gap-4">
+                {/* Chat Area */}
+                <ChatSection
+                    activeRoomData={activeRoomData}
+                    openStickerModal={openStickerModal}
+                />
+
+                {/* Online Users Panel */}
+                <div className="w-80 bg-white rounded-lg shadow-lg">
+                    <OnlineUsersPanel
+                        onlineUsers={onlineUsers}
+                        userCount={userCount}
+                        currentUser={data?.user}
+                    />
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col">
-                <div className="p-4 bg-white shadow-md flex items-center justify-between">
-                    <h2 className="text-xl font-bold">
-                        Welcome, {data?.user?.name || "User"}!
-                    </h2>
-                    <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md flex items-center gap-2">
-                        <Plus size={18} /> New Chat
-                    </button>
-                </div>
-                <div className="flex-1 flex items-center justify-center">
-                    <MessageCircle size={48} className="text-indigo-300" />
-                    <p className="text-xl text-indigo-500 ml-4">
-                        Select a chat room to start messaging!
-                    </p>
-                </div>
-            </div>
+            {/* Create DM Modal */}
+            <CreateDMModal
+                isOpen={showCreateDM}
+                onClose={() => setShowCreateDM(false)}
+                onCreateDM={handleCreateDM}
+                allUsers={availableUsers}
+            />
+
+            {/* Sticker Modal */}
+            <StickerModal
+                isOpen={showStickerModal}
+                onClose={closeStickerModal}
+                onSelectSticker={handleSelectSticker}
+                stickerPacks={stickerPacks}
+                selectedPack={selectedPack}
+                onPackChange={setSelectedPack}
+            />
         </div>
-    );
+    )
 }
