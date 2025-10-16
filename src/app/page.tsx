@@ -100,11 +100,12 @@ export default function YOTTChatRooms() {
     React.useEffect(() => {
         if (status == "authenticated") {
             ;(async () => {
-                const res = await apiClient.get("/v1/chat", {
+                const res = await apiClient.get(`/v1/user/chats`, {
                     headers: {
                         Authorization: `Bearer ${data?.idToken}`,
                     },
                 })
+                console.log("Fetched chat rooms:", res)
                 setChatRooms(res.data)
                 setInited(true)
             })()
