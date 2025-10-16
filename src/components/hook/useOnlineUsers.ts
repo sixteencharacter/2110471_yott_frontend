@@ -5,6 +5,7 @@ export function useOnlineUsers(onlineUsers: any[], currentUser: any) {
         return onlineUsers
             .filter((user) => {
                 if (!currentUser) return true
+                console.log("Current user:", currentUser, user)
                 return !(
                     user.username === currentUser.name ||
                     user.display_name === currentUser.name ||

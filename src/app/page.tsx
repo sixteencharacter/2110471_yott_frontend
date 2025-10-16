@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react"
+import React, { use, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { YOTTLoading } from "@/components/loading"
@@ -11,6 +11,7 @@ import CreateDMModal from "@/components/page/CreateDMModal"
 import { useSocket } from "@/components/hook/useSocket"
 import { useChatRooms } from "@/components/hook/useChatRooms"
 import { useOnlineUsers } from "@/components/hook/useOnlineUsers"
+import { useCreateDM } from "@/components/hook/useCreateDM"
 
 // Component definitions moved to separate files
 
@@ -46,24 +47,26 @@ export default function YOTTChatRooms() {
         },
     })
 
-    // ...existing code...
-
     // Transform online users for CreateDM modal, excluding current user
     const availableUsers = useOnlineUsers(onlineUsers, data?.user)
 
-    const handleCreateDM = (user: any) => {
-        const existingDM = chatRooms.find(
-            (room) => room.name === user.name && room.type === "private"
-        )
+    // Find and store the current user from onlineUsers based on session data
+    const [currentUser, setCurrentUser] = useState<any>(null)
+    React.useEffect(() => {
+        if (!data?.user || !onlineUsers?.length) return
+        const match = onlineUsers.find((user: any) => {
+            if (!data.user) return false
+            return (
+                user.username === data.user.name ||
+                user.display_name === data.user.name ||
+                user.name === data.user.name ||
+                user.email === data.user.email
+            )
+        })
+        setCurrentUser(match || null)
+    }, [onlineUsers, data?.user])
 
-        if (!existingDM) {
-            // Local state update for new DM (since chatRooms is now from hook)
-            // You may want to handle DM creation via API in a real app
-            setActiveRoom(chatRooms.length + 1)
-        } else {
-            setActiveRoom(existingDM.id)
-        }
-    }
+    const handleCreateDM = useCreateDM(socket, chatRooms, setActiveRoom)
 
     const filteredRooms = chatRooms.filter((room) =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -125,7 +128,7 @@ export default function YOTTChatRooms() {
                     <OnlineUsersPanel
                         onlineUsers={onlineUsers}
                         userCount={userCount}
-                        currentUser={data?.user}
+                        currentUser={currentUser}
                     />
                 </div>
             </div>
@@ -149,4 +152,14 @@ export default function YOTTChatRooms() {
             />
         </div>
     )
+}
+function useEffect(
+    arg0: () => void,
+    arg1: (
+        | any[]
+        | { name?: string | null; email?: string | null; image?: string | null }
+        | undefined
+    )[]
+) {
+    throw new Error("Function not implemented.")
 }
