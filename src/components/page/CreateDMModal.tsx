@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from "react"
 import { Search, X } from "lucide-react"
-import { UserAvatar } from "./userAvatar"
+import { UserAvatar } from "../userAvatar"
 
 const CreateDMModal = ({
     isOpen,
