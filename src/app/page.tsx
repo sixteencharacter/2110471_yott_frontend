@@ -63,10 +63,8 @@ export default function YOTTChatRooms() {
 
     // Transform online users for CreateDM modal, excluding current user
     const availableUsers = useOnlineUsers(onlineUsers, currentUser)
-    console.log("Online Users:", onlineUsers, "Current User:", currentUser)
-    console.log("Available Users for DM:", availableUsers)
-    // Find and store the current user from onlineUsers based on session data
 
+    // Find and store the current user from onlineUsers based on session data
     const handleCreateDM = useCreateDM(
         socket,
         chatRooms,

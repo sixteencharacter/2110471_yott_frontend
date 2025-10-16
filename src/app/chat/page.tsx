@@ -51,14 +51,30 @@ export default function ChatRoom() {
 
     // ...existing code...
 
+    // Find and store the current user from onlineUsers based on session data
+    const [currentUser, setCurrentUser] = useState<any>(null)
+    React.useEffect(() => {
+        if (!data?.user || !onlineUsers?.length) return
+        const match = onlineUsers.find((user: any) => {
+            if (!data.user) return false
+            return (
+                user.username === data.user.name ||
+                user.display_name === data.user.name ||
+                user.name === data.user.name ||
+                user.email === data.user.email
+            )
+        })
+        setCurrentUser(match || null)
+    }, [onlineUsers, data?.user])
+
     // Transform online users for CreateDM modal, excluding current user
-    const availableUsers = useOnlineUsers(onlineUsers, data?.user)
+    const availableUsers = useOnlineUsers(onlineUsers, currentUser)
 
     const handleCreateDM = useCreateDM(
         socket,
         chatRooms,
         setActiveRoom,
-        currentuser
+        currentUser
     )
 
     const filteredRooms = chatRooms.filter((room) =>
@@ -103,7 +119,7 @@ export default function ChatRoom() {
                     <OnlineUsersPanel
                         onlineUsers={onlineUsers}
                         userCount={userCount}
-                        currentUser={data?.user}
+                        currentUser={currentUser}
                     />
                 </div>
             </div>

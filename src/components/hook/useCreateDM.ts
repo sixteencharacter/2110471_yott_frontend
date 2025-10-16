@@ -16,16 +16,17 @@ export function useCreateDM(
                 if (socket) {
                     console.log(
                         "Creating DM with user:",
-                        user.name,
+                        user,
                         "and",
-                        currentUser.name
+                        currentUser
                     )
                     const data = {
                         chat_name: "ชื่อแชท",
                         is_groupchat: false,
-                        member_ids: [currentUser.id, user.id],
+                        member_ids: [currentUser.keycloak_id, user.id],
                     }
-                    socket.emit("create_chat", currentUser.id, data)
+                    console.log(data)
+                    socket.emit("create_chat", data)
                 } else {
                     throw new Error("Socket not initialized")
                 }

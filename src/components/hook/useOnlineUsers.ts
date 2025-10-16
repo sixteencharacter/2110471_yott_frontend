@@ -5,15 +5,15 @@ export function useOnlineUsers(onlineUsers: any[], currentUser: any) {
         return onlineUsers
             .filter((user) => {
                 if (!currentUser) return true
-                console.log("Current user:", currentUser, user)
-                console.log(
-                    !(
-                        user.keycloak_id === currentUser.keycloak_id ||
-                        user.username === currentUser.username ||
-                        user.display_name === currentUser.display_name ||
-                        user.email === currentUser.email
-                    )
-                )
+                // console.log("Current user:", currentUser, user)
+                // console.log(
+                //     !(
+                //         user.keycloak_id === currentUser.keycloak_id ||
+                //         user.username === currentUser.username ||
+                //         user.display_name === currentUser.display_name ||
+                //         user.email === currentUser.email
+                //     )
+                // )
                 return !(
                     user.keycloak_id === currentUser.keycloak_id ||
                     user.username === currentUser.username ||
