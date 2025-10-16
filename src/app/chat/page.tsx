@@ -54,7 +54,12 @@ export default function ChatRoom() {
     // Transform online users for CreateDM modal, excluding current user
     const availableUsers = useOnlineUsers(onlineUsers, data?.user)
 
-    const handleCreateDM = useCreateDM(socket, chatRooms, setActiveRoom)
+    const handleCreateDM = useCreateDM(
+        socket,
+        chatRooms,
+        setActiveRoom,
+        currentuser
+    )
 
     const filteredRooms = chatRooms.filter((room) =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase())

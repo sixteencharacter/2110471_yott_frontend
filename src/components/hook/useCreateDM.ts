@@ -4,7 +4,8 @@ import { Socket } from "socket.io-client"
 export function useCreateDM(
     socket: Socket | null,
     chatRooms: any[],
-    setActiveRoom: (id: number) => void
+    setActiveRoom: (id: number) => void,
+    currentUser: any
 ) {
     return useCallback(
         (user: any) => {
@@ -13,13 +14,18 @@ export function useCreateDM(
             )
             if (!existingDM) {
                 if (socket) {
-                    console.log("Creating DM with user:", user)
+                    console.log(
+                        "Creating DM with user:",
+                        user.name,
+                        "and",
+                        currentUser.name
+                    )
                     const data = {
                         chat_name: "ชื่อแชท",
                         is_groupchat: false,
-                        member_ids: [user.id],
+                        member_ids: [currentUser.id, user.id],
                     }
-                    socket.emit("create_chat", user.id, data)
+                    socket.emit("create_chat", currentUser.id, data)
                 } else {
                     throw new Error("Socket not initialized")
                 }

@@ -46,11 +46,6 @@ export default function YOTTChatRooms() {
             console.log("Sticker sent:", sticker)
         },
     })
-
-    // Transform online users for CreateDM modal, excluding current user
-    const availableUsers = useOnlineUsers(onlineUsers, data?.user)
-
-    // Find and store the current user from onlineUsers based on session data
     const [currentUser, setCurrentUser] = useState<any>(null)
     React.useEffect(() => {
         if (!data?.user || !onlineUsers?.length) return
@@ -66,7 +61,18 @@ export default function YOTTChatRooms() {
         setCurrentUser(match || null)
     }, [onlineUsers, data?.user])
 
-    const handleCreateDM = useCreateDM(socket, chatRooms, setActiveRoom)
+    // Transform online users for CreateDM modal, excluding current user
+    const availableUsers = useOnlineUsers(onlineUsers, currentUser)
+    console.log("Online Users:", onlineUsers, "Current User:", currentUser)
+    console.log("Available Users for DM:", availableUsers)
+    // Find and store the current user from onlineUsers based on session data
+
+    const handleCreateDM = useCreateDM(
+        socket,
+        chatRooms,
+        setActiveRoom,
+        currentUser
+    )
 
     const filteredRooms = chatRooms.filter((room) =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase())

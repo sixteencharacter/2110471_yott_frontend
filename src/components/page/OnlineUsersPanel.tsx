@@ -20,9 +20,9 @@ export default function OnlineUsersPanel({
             (user: any) => {
                 if (!currentUser) return true
                 return !(
-                    user.username === currentUser.name ||
-                    user.display_name === currentUser.name ||
-                    user.name === currentUser.name ||
+                    user.keycloak_id === currentUser.keycloak_id ||
+                    user.username === currentUser.username ||
+                    user.display_name === currentUser.display_namename ||
                     user.email === currentUser.email
                 )
             }
