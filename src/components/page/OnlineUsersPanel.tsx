@@ -20,9 +20,9 @@ export default function OnlineUsersPanel({
             (user: any) => {
                 if (!currentUser) return true
                 return !(
-                    user.username === currentUser.name ||
-                    user.display_name === currentUser.name ||
-                    user.name === currentUser.name ||
+                    user.keycloak_id === currentUser.keycloak_id ||
+                    user.username === currentUser.username ||
+                    user.display_name === currentUser.display_namename ||
                     user.email === currentUser.email
                 )
             }
@@ -40,13 +40,13 @@ export default function OnlineUsersPanel({
                 {currentUser && (
                     <div className="flex items-center gap-3 bg-purple-400/30 p-2 rounded border-2 border-purple-400">
                         <UserAvatar
-                            name={currentUser.name || "User"}
+                            name={currentUser.username || "User"}
                             isOnline={true}
                             size="sm"
                         />
                         <div className="flex-1 min-w-0">
                             <p className="text-purple-600 font-serif text-sm font-semibold truncate">
-                                {currentUser.name || "Unknown User"}
+                                {currentUser.username || "Unknown User"}
                             </p>
                             <p className="text-xs text-purple-500">(me)</p>
                         </div>

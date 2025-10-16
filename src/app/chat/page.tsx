@@ -11,6 +11,7 @@ import CreateDMModal from "@/components/page/CreateDMModal"
 import { useSocket } from "@/components/hook/useSocket"
 import { useChatRooms } from "@/components/hook/useChatRooms"
 import { useOnlineUsers } from "@/components/hook/useOnlineUsers"
+import { useCreateDM } from "@/components/hook/useCreateDM"
 
 export default function ChatRoom() {
     const { data, update, status } = useSession()
@@ -53,18 +54,12 @@ export default function ChatRoom() {
     // Transform online users for CreateDM modal, excluding current user
     const availableUsers = useOnlineUsers(onlineUsers, data?.user)
 
-    const handleCreateDM = (user: any) => {
-        const existingDM = chatRooms.find(
-            (room) => room.name === user.name && room.type === "private"
-        )
-        if (!existingDM) {
-            // Local state update for new DM (since chatRooms is now from hook)
-            // You may want to handle DM creation via API in a real app
-            setActiveRoom(chatRooms.length + 1)
-        } else {
-            setActiveRoom(existingDM.id)
-        }
-    }
+    const handleCreateDM = useCreateDM(
+        socket,
+        chatRooms,
+        setActiveRoom,
+        currentuser
+    )
 
     const filteredRooms = chatRooms.filter((room) =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
