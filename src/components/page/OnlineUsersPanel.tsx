@@ -1,7 +1,7 @@
 "use client"
 import React from "react"
 import { Users } from "lucide-react"
-import { UserAvatar } from "./userAvatar"
+import { UserAvatar } from "../userAvatar"
 
 export default function OnlineUsersPanel({
     onlineUsers,
