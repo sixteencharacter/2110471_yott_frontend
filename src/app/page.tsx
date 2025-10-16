@@ -48,9 +48,11 @@ export default function YOTTChatRooms() {
     })
     const [currentUser, setCurrentUser] = useState<any>(null)
     React.useEffect(() => {
+        
         if (!data?.user || !onlineUsers?.length) return
         const match = onlineUsers.find((user: any) => {
             if (!data.user) return false
+            console.log("User:", user.username, "Data User:", data.user)
             return (
                 user.username === data.user.name ||
                 user.display_name === data.user.name ||
