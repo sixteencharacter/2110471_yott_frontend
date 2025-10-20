@@ -14,6 +14,9 @@ export function useSocket(token?: string) {
             reconnectionDelay: 1000,
             reconnectionAttempts: 5,
             timeout: 50000,
+            extraHeaders : {
+                'Authorization' : `Bearer ${token}`
+            }
         })
         setSocket(socketConnection)
 
