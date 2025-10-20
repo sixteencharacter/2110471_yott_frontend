@@ -23,6 +23,7 @@ export default function YOTTChatRooms() {
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
     const { chatRooms, isInited } = useChatRooms(data?.idToken)
+    console.log("idToken",data?.idToken)
     const { socket, onlineUsers, userCount } = useSocket(data?.idToken)
 
     // ...existing code...
