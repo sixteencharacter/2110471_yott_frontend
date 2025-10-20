@@ -30,6 +30,7 @@ export function useSocket(token?: string) {
             console.error("Socket error:", error)
         })
         socketConnection.on("online_users_update", (data) => {
+            console.log("Online users update:", data.users)
             setUserCount(data.total_count)
             setOnlineUsers(data.users || [])
         })
