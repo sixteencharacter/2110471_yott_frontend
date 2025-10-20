@@ -5,7 +5,8 @@ export function useCreateDM(
     socket: Socket | null,
     chatRooms: any[],
     setActiveRoom: (id: number) => void,
-    currentUser: any
+    currentUser: any,
+    refreshChatRooms?: () => void
 ) {
     return useCallback(
         (user: any) => {
@@ -27,6 +28,11 @@ export function useCreateDM(
                     }
                     console.log(data)
                     socket.emit("create_chat", data)
+
+                    // Refresh chat rooms after creating DM
+                    if (refreshChatRooms) {
+                        setTimeout(() => refreshChatRooms(), 1000)
+                    }
                 } else {
                     throw new Error("Socket not initialized")
                 }
@@ -35,6 +41,6 @@ export function useCreateDM(
                 setActiveRoom(existingDM.id)
             }
         },
-        [socket, chatRooms, setActiveRoom]
+        [socket, chatRooms, setActiveRoom, currentUser, refreshChatRooms]
     )
 }

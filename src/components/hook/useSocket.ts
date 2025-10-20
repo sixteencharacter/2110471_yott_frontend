@@ -33,6 +33,15 @@ export function useSocket(token?: string) {
             setUserCount(data.total_count)
             setOnlineUsers(data.users || [])
         })
+        socketConnection.on("chat_created", (chat) => {
+            console.log("New chat created:", chat.cid)
+        })
+        socketConnection.on("user_joined", (data) => {
+            console.log("User joined:", data)
+        })
+        socketConnection.on("user_left", (data) => {
+            console.log("User left:", data)
+        })
         return () => {
             socketConnection.disconnect()
         }

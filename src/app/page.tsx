@@ -22,7 +22,9 @@ export default function YOTTChatRooms() {
     const [activeRoom, setActiveRoom] = useState(1)
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
-    const { chatRooms, isInited } = useChatRooms(data?.idToken)
+    const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
+        data?.idToken
+    )
     const { socket, onlineUsers, userCount } = useSocket(data?.idToken)
 
     // ...existing code...
@@ -60,7 +62,7 @@ export default function YOTTChatRooms() {
         })
         setCurrentUser(match || null)
     }, [onlineUsers, data?.user])
-
+    console.log("Current User:", currentUser)
     // Transform online users for CreateDM modal, excluding current user
     const availableUsers = useOnlineUsers(onlineUsers, currentUser)
 
@@ -69,7 +71,8 @@ export default function YOTTChatRooms() {
         socket,
         chatRooms,
         setActiveRoom,
-        currentUser
+        currentUser,
+        refreshChatRooms
     )
 
     const filteredRooms = chatRooms.filter((room) =>
@@ -81,6 +84,9 @@ export default function YOTTChatRooms() {
 
     // Handle room selection - navigate to chat page
     const handleRoomSelect = (roomId: number) => {
+        if (socket) {
+            socket?.emit("join_chat", roomId)
+        }
         router.push(`/chat?roomId=${roomId}`)
     }
 

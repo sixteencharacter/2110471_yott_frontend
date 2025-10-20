@@ -19,12 +19,14 @@ export default function ChatRoom() {
     const searchParams = useSearchParams()
     const roomId = searchParams.get("roomId")
 
-    console.log("Chat Room - Status:", status, "RoomId:", roomId)
+    // console.log("Chat Room - Status:", status, "RoomId:", roomId)
 
     const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : 1)
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
-    const { chatRooms, isInited } = useChatRooms(data?.idToken)
+    const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
+        data?.idToken
+    )
     const { socket, onlineUsers, userCount } = useSocket(data?.idToken)
 
     // ...existing code...
@@ -74,7 +76,8 @@ export default function ChatRoom() {
         socket,
         chatRooms,
         setActiveRoom,
-        currentUser
+        currentUser,
+        refreshChatRooms
     )
 
     const filteredRooms = chatRooms.filter((room) =>
@@ -86,6 +89,9 @@ export default function ChatRoom() {
 
     // Handle room selection within chat page
     const handleRoomSelect = (roomId: number) => {
+        if (socket) {
+            socket?.emit("join_chat", roomId)
+        }
         setActiveRoom(roomId)
         router.push(`/chat?roomId=${roomId}`)
     }
