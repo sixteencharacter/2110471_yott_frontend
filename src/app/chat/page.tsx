@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { YOTTLoading } from "@/components/loading"
 import { StickerModal, useSticker } from "@/components/sticker"
 import Sidebar from "@/components/page/Sidebar"
-import OnlineUsersPanel from "@/components/page/OnlineUsersPanel"
+import OnlineUsersPanel from "@/components/page/UsersPanel"
 import ChatSection from "@/components/page/ChatSection"
 import CreateDMModal from "@/components/page/CreateDMModal"
 import { useSocket } from "@/components/hook/useSocket"
@@ -19,15 +19,13 @@ export default function ChatRoom() {
     const searchParams = useSearchParams()
     const roomId = searchParams.get("roomId")
 
-    // console.log("Chat Room - Status:", status, "RoomId:", roomId)
-
     const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : 1)
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
         data?.idToken
     )
-    const { socket, onlineUsers, userCount } = useSocket(data?.idToken)
+    const { socket, allUsers, userCount } = useSocket(data?.idToken)
 
     // ...existing code...
 
@@ -53,11 +51,11 @@ export default function ChatRoom() {
 
     // ...existing code...
 
-    // Find and store the current user from onlineUsers based on session data
+    // Find and store the current user from allUsers based on session data
     const [currentUser, setCurrentUser] = useState<any>(null)
     React.useEffect(() => {
-        if (!data?.user || !onlineUsers?.length) return
-        const match = onlineUsers.find((user: any) => {
+        if (!data?.user || !allUsers?.length) return
+        const match = allUsers.find((user: any) => {
             if (!data.user) return false
             return (
                 user.username === data.user.name ||
@@ -67,10 +65,10 @@ export default function ChatRoom() {
             )
         })
         setCurrentUser(match || null)
-    }, [onlineUsers, data?.user])
+    }, [allUsers, data?.user])
 
     // Transform online users for CreateDM modal, excluding current user
-    const availableUsers = useOnlineUsers(onlineUsers, currentUser)
+    const availableUsers = useOnlineUsers(allUsers, currentUser)
 
     const handleCreateDM = useCreateDM(
         socket,
@@ -123,7 +121,7 @@ export default function ChatRoom() {
                 {/* Online Users Panel */}
                 <div className="w-80 bg-white rounded-lg shadow-lg">
                     <OnlineUsersPanel
-                        onlineUsers={onlineUsers}
+                        allUsers={allUsers}
                         userCount={userCount}
                         currentUser={currentUser}
                     />
@@ -135,7 +133,7 @@ export default function ChatRoom() {
                 isOpen={showCreateDM}
                 onClose={() => setShowCreateDM(false)}
                 onCreateDM={handleCreateDM}
-                allUsers={availableUsers}
+                allUsers={allUsers}
             />
 
             {/* Sticker Modal */}

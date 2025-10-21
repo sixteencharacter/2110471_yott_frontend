@@ -11,12 +11,6 @@ export function useChatRooms(token?: string) {
             const res = await apiClient.get(`/v1/user/chats`, {
                 headers: { Authorization: `Bearer ${token}` },
             })
-            console.log("Fetched chat rooms:", res.data)
-            console.log(
-                "Type of res.data:",
-                typeof res.data,
-                Array.isArray(res.data)
-            )
 
             // Map backend data to UI format
             const mappedRooms = res.data.map((room: any) => ({
@@ -27,7 +21,6 @@ export function useChatRooms(token?: string) {
                 unread: 0,
             }))
 
-            console.log("Mapped rooms:", mappedRooms)
             setChatRooms(mappedRooms)
             setInited(true)
         } catch (error) {

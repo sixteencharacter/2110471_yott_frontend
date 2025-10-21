@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client"
 
 export function useSocket(token?: string) {
     const [socket, setSocket] = useState<Socket | null>(null)
-    const [onlineUsers, setOnlineUsers] = useState<any[]>([])
+    const [allUsers, setAllUsers] = useState<any[]>([])
     const [userCount, setUserCount] = useState<number>(0)
 
     useEffect(() => {
@@ -14,9 +14,9 @@ export function useSocket(token?: string) {
             reconnectionDelay: 1000,
             reconnectionAttempts: 5,
             timeout: 50000,
-            extraHeaders : {
-                'Authorization' : `Bearer ${token}`
-            }
+            extraHeaders: {
+                Authorization: `Bearer ${token}`,
+            },
         })
         setSocket(socketConnection)
 
@@ -35,7 +35,7 @@ export function useSocket(token?: string) {
         socketConnection.on("online_users_update", (data) => {
             console.log("Online users update:", data.users)
             setUserCount(data.total_count)
-            setOnlineUsers(data.users || [])
+            setAllUsers(data.users || [])
         })
         socketConnection.on("chat_created", (chat) => {
             console.log("New chat created:", chat.cid)
@@ -51,5 +51,5 @@ export function useSocket(token?: string) {
         }
     }, [token])
 
-    return { socket, onlineUsers, userCount }
+    return { socket, allUsers, userCount }
 }
