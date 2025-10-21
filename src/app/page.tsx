@@ -12,6 +12,7 @@ import { useSocket } from "@/components/hook/useSocket"
 import { useChatRooms } from "@/components/hook/useChatRooms"
 import { useOnlineUsers } from "@/components/hook/useOnlineUsers"
 import { useCreateDM } from "@/components/hook/useCreateDM"
+import { useCurrentUser } from "@/components/hook/useCurrentUser"
 
 // Component definitions moved to separate files
 
@@ -48,23 +49,9 @@ export default function YOTTChatRooms() {
             console.log("Sticker sent:", sticker)
         },
     })
-    const [currentUser, setCurrentUser] = useState<any>(null)
-    React.useEffect(() => {
-        if (!data?.user || !allUsers?.length) return
-        const match = allUsers.find((user: any) => {
-            if (!data.user) return false
-            return (
-                user.username === data.user.name ||
-                user.display_name === data.user.name ||
-                user.name === data.user.name ||
-                user.email === data.user.email
-            )
-        })
-        setCurrentUser(match || null)
-    }, [allUsers, data?.user])
 
-    // Transform online users for CreateDM modal, excluding current user
-    const availableUsers = useOnlineUsers(allUsers, currentUser)
+    // Get current user and other users
+    const { currentUser, otherUsers } = useCurrentUser(allUsers, data?.user)
 
     // Find and store the current user from onlineUsers based on session data
     const handleCreateDM = useCreateDM(
@@ -136,7 +123,7 @@ export default function YOTTChatRooms() {
                 {/* Online Users Panel */}
                 <div className="w-80 bg-white rounded-lg shadow-lg">
                     <UsersPanel
-                        allUsers={allUsers}
+                        allUsers={otherUsers}
                         userCount={userCount}
                         currentUser={currentUser}
                     />
@@ -148,7 +135,7 @@ export default function YOTTChatRooms() {
                 isOpen={showCreateDM}
                 onClose={() => setShowCreateDM(false)}
                 onCreateDM={handleCreateDM}
-                allUsers={allUsers}
+                allUsers={otherUsers}
             />
 
             {/* Sticker Modal */}

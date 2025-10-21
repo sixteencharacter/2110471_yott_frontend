@@ -17,7 +17,9 @@ const CreateDMModal = ({
     const [searchTerm, setSearchTerm] = useState("")
     try {
         const filtered = allUsers.filter((user) =>
-            user.display_name.toLowerCase().includes(searchTerm.toLowerCase())
+            (user.display_name || user.username || "")
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase())
         )
 
         if (!isOpen) return null
@@ -57,9 +59,14 @@ const CreateDMModal = ({
                                 No users found
                             </p>
                         ) : (
-                            filtered.map((user) => (
+                            filtered.map((user, index) => (
                                 <button
-                                    key={user.id}
+                                    key={
+                                        user.keycloak_id ||
+                                        user.username ||
+                                        user.id ||
+                                        index
+                                    }
                                     onClick={() => {
                                         onCreateDM(user)
                                         onClose()
@@ -67,16 +74,22 @@ const CreateDMModal = ({
                                     className="w-full flex items-center gap-3 p-3 hover:bg-purple-500 rounded-lg transition text-left"
                                 >
                                     <UserAvatar
-                                        name={user.name}
-                                        isOnline={user.isOnline}
+                                        name={
+                                            user.display_name ||
+                                            user.username ||
+                                            "Unknown"
+                                        }
+                                        isOnline={user.status === "online"}
                                         size="md"
                                     />
                                     <div className="flex-1">
                                         <p className="text-white font-serif font-semibold">
-                                            {user.name}
+                                            {user.display_name ||
+                                                user.username ||
+                                                "Unknown User"}
                                         </p>
                                         <p className="text-xs text-white/60">
-                                            {user.isOnline
+                                            {user.status === "online"
                                                 ? "Online"
                                                 : "Offline"}
                                         </p>

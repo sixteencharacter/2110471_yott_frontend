@@ -24,17 +24,17 @@ export default function UsersPanel({ allUsers, userCount, currentUser }: any) {
             (user: any) => user.status === "offline"
         )
 
-        const filteredOnline = onlineUsersList.filter((user: any) => {
-            if (!currentUser) return true
-            return !(
-                user.uid === currentUser.uid ||
-                user.username === currentUser.username ||
-                user.display_name === currentUser.display_name ||
-                user.email === currentUser.email
-            )
-        })
+        // const filteredOnline = onlineUsersList.filter((user: any) => {
+        //     if (!currentUser) return true
+        //     return !(
+        //         user.uid === currentUser.uid ||
+        //         user.username === currentUser.username ||
+        //         user.display_name === currentUser.display_name ||
+        //         user.email === currentUser.email
+        //     )
+        // })
 
-        return { online: filteredOnline, offline: offlineUsersList }
+        return { online: onlineUsersList, offline: offlineUsersList }
     }, [allUsers, currentUser])
     return (
         <div className="bg-purple-500/20 border border-purple-300 rounded-lg p-4 space-y-4 h-full overflow-y-auto">
