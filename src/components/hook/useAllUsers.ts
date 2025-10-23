@@ -1,8 +1,10 @@
 import { useMemo } from "react"
 
-export function useOnlineUsers(allUsers: any[], currentUser: any) {
+export function useAllUsers(onlineUsers: any[], currentUser: any) {
     return useMemo(() => {
-        return allUsers
+        // For now, we only have online users from socket
+        // In a real app, you'd fetch all users from an API endpoint
+        return onlineUsers
             .filter((user) => {
                 if (!currentUser) return true
                 return !(
@@ -17,5 +19,5 @@ export function useOnlineUsers(allUsers: any[], currentUser: any) {
                 name: user.username || user.display_name || "Unknown User",
                 isOnline: user.status === "online",
             }))
-    }, [allUsers, currentUser])
+    }, [onlineUsers, currentUser])
 }

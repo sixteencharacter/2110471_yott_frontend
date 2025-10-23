@@ -3,8 +3,9 @@ import { io, Socket } from "socket.io-client"
 
 export function useSocket(token?: string) {
     const [socket, setSocket] = useState<Socket | null>(null)
-    const [onlineUsers, setOnlineUsers] = useState<any[]>([])
+    const [allUsers, setAllUsers] = useState<any[]>([])
     const [userCount, setUserCount] = useState<number>(0)
+    const [socketError, setSocketError] = useState<string | null>(null)
 
     useEffect(() => {
         if (!token) return
@@ -14,9 +15,9 @@ export function useSocket(token?: string) {
             reconnectionDelay: 1000,
             reconnectionAttempts: 5,
             timeout: 50000,
-            extraHeaders : {
-                'Authorization' : `Bearer ${token}`
-            }
+            extraHeaders: {
+                Authorization: `Bearer ${token}`,
+            },
         })
         setSocket(socketConnection)
 
@@ -35,12 +36,43 @@ export function useSocket(token?: string) {
         socketConnection.on("online_users_update", (data) => {
             console.log("Online users update:", data.users)
             setUserCount(data.total_count)
-            setOnlineUsers(data.users || [])
+            setAllUsers(data.users || [])
         })
+        socketConnection.on("chat_created", (chat) => {
+            console.log("New chat created:", chat.cid)
+        })
+        socketConnection.on("user_joined", (data) => {
+            console.log("User joined:", data)
+        })
+        socketConnection.on("user_left", (data) => {
+            console.log("User left:", data)
+        })
+        socketConnection.on("handle_1_dm_exists", (data) => {
+            console.log("DM exists:", data)
+            setSocketError("A direct message with this user already exists!")
+        })
+        socketConnection.on("chat_creation_error", (error) => {
+            console.error("Chat creation error:", error)
+            setSocketError(error.message || "Failed to create chat")
+        })
+
         return () => {
             socketConnection.disconnect()
         }
     }, [token])
 
-    return { socket, onlineUsers, userCount }
+    // Auto-clear error after 5 seconds
+    useEffect(() => {
+        if (socketError) {
+            const timer = setTimeout(() => {
+                setSocketError(null)
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [socketError])
+
+    // Function to clear error
+    const clearSocketError = () => setSocketError(null)
+
+    return { socket, allUsers, userCount, socketError, clearSocketError }
 }
