@@ -3,11 +3,19 @@ import React from "react"
 import { Users } from "lucide-react"
 import { UserAvatar } from "../userAvatar"
 import { off } from "process"
-
-export default function UsersPanel({ allUsers, userCount, currentUser }: any) {
+import { Person } from "@/types/person"
+export default function UsersPanel({
+    allUsers,
+    userCount,
+    currentUser,
+}: {
+    allUsers: Person[]
+    userCount: number
+    currentUser: Person | null
+}) {
     const uniqueUsers = React.useMemo(() => {
         const userMap = new Map()
-        allUsers.forEach((user: any) => {
+        allUsers.forEach((user: Person) => {
             const key = user.username
             if (key && !userMap.has(key)) {
                 userMap.set(key, user)
@@ -17,22 +25,12 @@ export default function UsersPanel({ allUsers, userCount, currentUser }: any) {
         const allUsers_map = Array.from(userMap.values())
 
         const onlineUsersList = allUsers_map.filter(
-            (user: any) => user.status === "online"
+            (user: Person) => user.status === "online"
         )
 
         const offlineUsersList = allUsers_map.filter(
-            (user: any) => user.status === "offline"
+            (user: Person) => user.status === "offline"
         )
-
-        // const filteredOnline = onlineUsersList.filter((user: any) => {
-        //     if (!currentUser) return true
-        //     return !(
-        //         user.uid === currentUser.uid ||
-        //         user.username === currentUser.username ||
-        //         user.display_name === currentUser.display_name ||
-        //         user.email === currentUser.email
-        //     )
-        // })
 
         return { online: onlineUsersList, offline: offlineUsersList }
     }, [allUsers, currentUser])
@@ -65,10 +63,10 @@ export default function UsersPanel({ allUsers, userCount, currentUser }: any) {
                     ) : (
                         <div className="space-y-1">
                             {uniqueUsers.online.map(
-                                (user: any, index: number) => (
+                                (user: Person, index: number) => (
                                     <div
                                         key={`online-${
-                                            user.keycloak_id || user.username
+                                            user.uid || user.username
                                         }-${index}`}
                                         className="flex items-center gap-3 hover:bg-purple-400/20 p-2 rounded transition cursor-pointer"
                                     >
@@ -104,13 +102,13 @@ export default function UsersPanel({ allUsers, userCount, currentUser }: any) {
                         Offline (
                         {
                             uniqueUsers.offline.filter(
-                                (user: any) => user.status === "offline"
+                                (user: Person) => user.status === "offline"
                             ).length
                         }
                         )
                     </h3>
                     {uniqueUsers.offline.filter(
-                        (user: any) => user.status === "offline"
+                        (user: Person) => user.status === "offline"
                     ).length === 0 ? (
                         <div className="text-center text-gray-500 py-2 text-sm">
                             ไม่มีผู้ใช้ออฟไลน์
@@ -119,12 +117,12 @@ export default function UsersPanel({ allUsers, userCount, currentUser }: any) {
                         <div className="space-y-1">
                             {uniqueUsers.offline
                                 .filter(
-                                    (user: any) => user.status === "offline"
+                                    (user: Person) => user.status === "offline"
                                 )
-                                .map((user: any, index: number) => (
+                                .map((user: Person, index: number) => (
                                     <div
                                         key={`offline-${
-                                            user.keycloak_id || user.username
+                                            user.uid || user.username
                                         }-${index}`}
                                         className="flex items-center gap-3 hover:bg-gray-200/50 p-2 rounded transition cursor-pointer opacity-70"
                                     >

@@ -1,9 +1,11 @@
+import { Person } from "@/types/person"
+import { send } from "process"
 import { useEffect, useState } from "react"
 import { io, Socket } from "socket.io-client"
 
 export function useSocket(token?: string) {
     const [socket, setSocket] = useState<Socket | null>(null)
-    const [allUsers, setAllUsers] = useState<any[]>([])
+    const [allUsers, setAllUsers] = useState<Person[]>([])
     const [userCount, setUserCount] = useState<number>(0)
     const [socketError, setSocketError] = useState<string | null>(null)
 
@@ -55,7 +57,9 @@ export function useSocket(token?: string) {
             console.error("Chat creation error:", error)
             setSocketError(error.message || "Failed to create chat")
         })
-
+        socketConnection.on("receive_msg", (message) => {
+            console.log("Receive message:", message)
+        })
         return () => {
             socketConnection.disconnect()
         }
