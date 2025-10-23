@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation"
 import { YOTTLoading } from "@/components/loading"
 import { StickerModal, useSticker } from "@/components/sticker"
 import Sidebar from "@/components/page/Sidebar"
-import OnlineUsersPanel from "@/components/page/OnlineUsersPanel"
+import UsersPanel from "@/components/page/UsersPanel"
 import ChatSection from "@/components/page/ChatSection"
 import CreateDMModal from "@/components/page/CreateDMModal"
 import { useSocket } from "@/components/hook/useSocket"
 import { useChatRooms } from "@/components/hook/useChatRooms"
 import { useOnlineUsers } from "@/components/hook/useOnlineUsers"
 import { useCreateDM } from "@/components/hook/useCreateDM"
+import { useCurrentUser } from "@/components/hook/useCurrentUser"
 
 // Component definitions moved to separate files
 
@@ -22,9 +23,11 @@ export default function YOTTChatRooms() {
     const [activeRoom, setActiveRoom] = useState(1)
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
-    const { chatRooms, isInited } = useChatRooms(data?.idToken)
-    console.log("idToken",data?.idToken)
-    const { socket, onlineUsers, userCount } = useSocket(data?.idToken)
+    const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
+        data?.idToken
+    )
+    const { socket, allUsers, userCount, socketError, clearSocketError } =
+        useSocket(data?.idToken)
 
     // ...existing code...
 
@@ -47,34 +50,17 @@ export default function YOTTChatRooms() {
             console.log("Sticker sent:", sticker)
         },
     })
-    const [currentUser, setCurrentUser] = useState<any>(null)
-    React.useEffect(() => {
-        
-        if (!data?.user || !onlineUsers?.length) return
-        const match = onlineUsers.find((user: any) => {
-            if (!data.user) return false
-            console.log("User:", user.username, "Data User:", data.user)
-            return (
-                user.username === data.user.name ||
-                user.display_name === data.user.name ||
-                user.name === data.user.name ||
-                user.email === data.user.email
-            )
-        })
-        setCurrentUser(match || null)
-    }, [onlineUsers, data?.user])
 
-    // Transform online users for CreateDM modal, excluding current user
-    const availableUsers = useOnlineUsers(onlineUsers, currentUser)
-    console.log("Online Users:", onlineUsers, "Current User:", currentUser)
-    console.log("Available Users for DM:", availableUsers)
+    // Get current user and other users
+    const { currentUser, otherUsers } = useCurrentUser(allUsers, data?.user)
+
     // Find and store the current user from onlineUsers based on session data
-
     const handleCreateDM = useCreateDM(
         socket,
         chatRooms,
         setActiveRoom,
-        currentUser
+        currentUser,
+        refreshChatRooms
     )
 
     const filteredRooms = chatRooms.filter((room) =>
@@ -86,12 +72,30 @@ export default function YOTTChatRooms() {
 
     // Handle room selection - navigate to chat page
     const handleRoomSelect = (roomId: number) => {
+        if (socket) {
+            socket?.emit("join_chat", roomId)
+        }
         router.push(`/chat?roomId=${roomId}`)
     }
 
     return (
         <div className="h-screen flex bg-purple-200 gap-4 p-4">
             <YOTTLoading show={!isInited} />
+
+            {/* Error Notification */}
+            {socketError && (
+                <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+                    <div className="flex items-center gap-2">
+                        <span>{socketError}</span>
+                        <button
+                            onClick={clearSocketError}
+                            className="text-white hover:text-gray-200"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Sidebar */}
             <Sidebar
@@ -134,8 +138,8 @@ export default function YOTTChatRooms() {
 
                 {/* Online Users Panel */}
                 <div className="w-80 bg-white rounded-lg shadow-lg">
-                    <OnlineUsersPanel
-                        onlineUsers={onlineUsers}
+                    <UsersPanel
+                        allUsers={otherUsers}
                         userCount={userCount}
                         currentUser={currentUser}
                     />
@@ -147,7 +151,7 @@ export default function YOTTChatRooms() {
                 isOpen={showCreateDM}
                 onClose={() => setShowCreateDM(false)}
                 onCreateDM={handleCreateDM}
-                allUsers={availableUsers}
+                allUsers={otherUsers}
             />
 
             {/* Sticker Modal */}
