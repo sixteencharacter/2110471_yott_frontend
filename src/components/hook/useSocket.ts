@@ -5,6 +5,7 @@ export function useSocket(token?: string) {
     const [socket, setSocket] = useState<Socket | null>(null)
     const [allUsers, setAllUsers] = useState<any[]>([])
     const [userCount, setUserCount] = useState<number>(0)
+    const [socketError, setSocketError] = useState<string | null>(null)
 
     useEffect(() => {
         if (!token) return
@@ -46,10 +47,32 @@ export function useSocket(token?: string) {
         socketConnection.on("user_left", (data) => {
             console.log("User left:", data)
         })
+        socketConnection.on("handle_1_dm_exists", (data) => {
+            console.log("DM exists:", data)
+            setSocketError("A direct message with this user already exists!")
+        })
+        socketConnection.on("chat_creation_error", (error) => {
+            console.error("Chat creation error:", error)
+            setSocketError(error.message || "Failed to create chat")
+        })
+
         return () => {
             socketConnection.disconnect()
         }
     }, [token])
 
-    return { socket, allUsers, userCount }
+    // Auto-clear error after 5 seconds
+    useEffect(() => {
+        if (socketError) {
+            const timer = setTimeout(() => {
+                setSocketError(null)
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [socketError])
+
+    // Function to clear error
+    const clearSocketError = () => setSocketError(null)
+
+    return { socket, allUsers, userCount, socketError, clearSocketError }
 }

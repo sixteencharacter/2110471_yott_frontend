@@ -26,7 +26,8 @@ export default function YOTTChatRooms() {
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
         data?.idToken
     )
-    const { socket, allUsers, userCount } = useSocket(data?.idToken)
+    const { socket, allUsers, userCount, socketError, clearSocketError } =
+        useSocket(data?.idToken)
 
     // ...existing code...
 
@@ -80,6 +81,21 @@ export default function YOTTChatRooms() {
     return (
         <div className="h-screen flex bg-purple-200 gap-4 p-4">
             <YOTTLoading show={!isInited} />
+
+            {/* Error Notification */}
+            {socketError && (
+                <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+                    <div className="flex items-center gap-2">
+                        <span>{socketError}</span>
+                        <button
+                            onClick={clearSocketError}
+                            className="text-white hover:text-gray-200"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Sidebar */}
             <Sidebar
