@@ -26,8 +26,14 @@ export default function YOTTChatRooms() {
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
         data?.idToken
     )
-    const { socket, allUsers, userCount, socketError, clearSocketError } =
-        useSocket(data?.idToken)
+    const {
+        socket,
+        allUsers,
+        userCount,
+        socketError,
+        clearSocketError,
+        messages,
+    } = useSocket(data?.idToken)
 
     // ...existing code...
 
