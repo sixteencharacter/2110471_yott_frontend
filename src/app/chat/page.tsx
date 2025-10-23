@@ -32,7 +32,7 @@ export default function ChatRoom() {
     // ...existing code...
 
     // Initialize sticker functionality
-    const activeRoomData = chatRooms.find((r) => r.id === activeRoom)
+    const activeRoomData = chatRooms.find((r) => r.cid === activeRoom)
     const {
         stickerPacks,
         selectedPack,
@@ -45,12 +45,11 @@ export default function ChatRoom() {
         error: stickerError,
     } = useSticker({
         token: data?.idToken,
-        roomId: activeRoomData?.id,
+        roomId: activeRoomData?.cid,
         onStickerSent: (sticker) => {
             console.log("Sticker sent:", sticker)
         },
     })
-
     // Get current user and other users
     const { currentUser, otherUsers } = useCurrentUser(allUsers, data?.user)
 
@@ -69,8 +68,8 @@ export default function ChatRoom() {
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const groupRooms = filteredRooms.filter((r) => r.type === "group")
-    const privateRooms = filteredRooms.filter((r) => r.type === "private")
+    const groupRooms = filteredRooms.filter((r) => r.is_groupchat === true)
+    const privateRooms = filteredRooms.filter((r) => r.is_groupchat === false)
 
     // Handle room selection within chat page
     const handleRoomSelect = (roomId: number) => {
