@@ -17,7 +17,7 @@ export function useCreateDM(
                 const data = {
                     chat_name: "ชื่อแชท",
                     is_groupchat: false,
-                    member_ids: [currentUser?.uid, user.uid],
+                    member_ids: user.uid,
                 }
                 console.log(data)
                 socket.emit("create_chat", data)

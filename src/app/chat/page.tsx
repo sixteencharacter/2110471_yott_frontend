@@ -78,7 +78,7 @@ export default function ChatRoom() {
     // Handle room selection within chat page
     const handleRoomSelect = (roomId: number) => {
         if (socket) {
-            socket?.emit("join_chat", roomId)
+            socket?.emit("join_room", roomId)
         }
         setActiveRoom(roomId)
         router.push(`/chat?roomId=${roomId}`)

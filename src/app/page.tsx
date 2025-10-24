@@ -79,7 +79,7 @@ export default function YOTTChatRooms() {
     // Handle room selection - navigate to chat page
     const handleRoomSelect = (roomId: number) => {
         if (socket) {
-            socket?.emit("join_chat", roomId)
+            socket?.emit("join_room", roomId)
         }
         router.push(`/chat?roomId=${roomId}`)
     }

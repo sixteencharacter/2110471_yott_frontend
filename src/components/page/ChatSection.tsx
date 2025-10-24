@@ -13,7 +13,7 @@ export default function ChatSection({
 
     // Filter messages for current room
     const roomMessages = allMessages.filter(
-        (msg: any) => msg.cid === activeRoomData?.id
+        (msg: any) => msg.cid === activeRoomData?.cid
     )
 
     const handleSendMessage = () => {
@@ -21,7 +21,7 @@ export default function ChatSection({
             return
 
         const messageData = {
-            cid: activeRoomData.id,
+            cid: activeRoomData.cid,
             message: message.trim(),
         }
 
