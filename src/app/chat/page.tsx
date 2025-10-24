@@ -13,6 +13,7 @@ import { useChatRooms } from "@/components/hook/useChatRooms";
 import { useCreateDM } from "@/components/hook/useCreateDM";
 import { useCurrentUser } from "@/components/hook/useCurrentUser";
 
+
 export default function ChatRoom() {
   // Initialize page state
   const { data, update, status } = useSession();
@@ -20,11 +21,18 @@ export default function ChatRoom() {
   const searchParams = useSearchParams();
   const roomId = searchParams.get("roomId");
 
-  // Initialize React state
+  // Initialize React state - use roomId from URL
   const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : 1);
   const [showCreateDM, setShowCreateDM] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { chatRooms, isInited, refreshChatRooms } = useChatRooms(data?.idToken);
+
+  // Sync activeRoom with URL parameter
+  React.useEffect(() => {
+    if (roomId) {
+      setActiveRoom(parseInt(roomId));
+    }
+  }, [roomId]);
 
   // Socket Initialization
   const {
@@ -38,6 +46,12 @@ export default function ChatRoom() {
 
   // Initialize sticker functionality
   const activeRoomData = chatRooms.find((r) => r.cid === activeRoom);
+  
+  // Debug log
+  React.useEffect(() => {
+    console.log("Chat Page - activeRoom:", activeRoom, "activeRoomData:", activeRoomData);
+  }, [activeRoom, activeRoomData]);
+
   const {
     stickerPacks,
     selectedPack,
@@ -84,13 +98,13 @@ export default function ChatRoom() {
   };
 
   React.useEffect(() => {
-    if (socket && roomId) {
-      socket.emit("join_chat", roomId);
+    if (socket && activeRoom) {
+      socket.emit("join_chat", activeRoom);
     }
-  }, [socket]);
+  }, [socket, activeRoom]);
 
   return (
-    <div className="h-screen flex bg-purple-200 gap-4 p-4">
+    <div className="h-full flex bg-purple-200 gap-4 p-4">
       <YOTTLoading show={!isInited} />
 
       {/* Error Notification */}
@@ -108,22 +122,11 @@ export default function ChatRoom() {
         </div>
       )}
 
-      {/* Sidebar */}
-      <Sidebar
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        showCreateDM={showCreateDM}
-        setShowCreateDM={setShowCreateDM}
-        groupRooms={groupRooms}
-        privateRooms={privateRooms}
-        activeRoom={activeRoom}
-        setActiveRoom={handleRoomSelect}
-      />
-
       {/* Main Content Area */}
       <div className="flex-1 flex gap-4">
         {/* Chat Area */}
         <ChatSection
+          key={activeRoom} // Force re-render when room changes
           activeRoomData={activeRoomData}
           openStickerModal={openStickerModal}
           socket={socket}
@@ -141,23 +144,7 @@ export default function ChatRoom() {
         </div>
       </div>
 
-      {/* Create DM Modal */}
-      <CreateDMModal
-        isOpen={showCreateDM}
-        onClose={() => setShowCreateDM(false)}
-        onCreateDM={handleCreateDM}
-        allUsers={otherUsers}
-      />
-
-      {/* Sticker Modal */}
-      <StickerModal
-        isOpen={showStickerModal}
-        onClose={closeStickerModal}
-        onSelectSticker={handleSelectSticker}
-        stickerPacks={stickerPacks}
-        selectedPack={selectedPack}
-        onPackChange={setSelectedPack}
-      />
+      
     </div>
   );
 }

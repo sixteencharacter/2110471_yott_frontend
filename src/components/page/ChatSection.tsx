@@ -12,6 +12,13 @@ export default function ChatSection({
 }: any) {
     const [message, setMessage] = useState("")
 
+  // Debug log to check if activeRoomData changes
+  useEffect(() => {
+    console.log("ChatSection - activeRoomData changed:", activeRoomData);
+  }, [activeRoomData]);
+
+  
+  
     // Filter messages for current room
     const roomMessages = allMessages.filter(
         (msg: Message) => msg.cid === activeRoomData?.cid
