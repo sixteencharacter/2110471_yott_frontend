@@ -6,7 +6,6 @@ import { io, Socket } from "socket.io-client"
 export function useSocket(token?: string) {
     const [socket, setSocket] = useState<Socket | null>(null)
     const [allUsers, setAllUsers] = useState<Person[]>([])
-    const [userCount, setUserCount] = useState<number>(0)
     const [socketError, setSocketError] = useState<string | null>(null)
     const [messages, setMessages] = useState<any[]>([])
 
@@ -37,8 +36,7 @@ export function useSocket(token?: string) {
             console.error("Socket error:", error)
         })
         socketConnection.on("online_users_update", (data) => {
-            console.log("Online users update:", data.users)
-            setUserCount(data.total_count)
+            console.log("Online users update:", data.users, data.total_count)
             setAllUsers(data.users || [])
         })
         socketConnection.on("chat_created", (chat) => {
@@ -83,7 +81,6 @@ export function useSocket(token?: string) {
     return {
         socket,
         allUsers,
-        userCount,
         socketError,
         clearSocketError,
         messages,

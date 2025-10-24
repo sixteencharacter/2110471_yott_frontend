@@ -8,11 +8,7 @@ import { useCurrentUser } from "@/components/hook/useCurrentUser"
 // Main Chat Rooms Page
 export default function YOTTChatRooms() {
     const { data } = useSession()
-    const {
-        socket,
-        allUsers,
-        userCount,
-    } = useSocket(data?.idToken)
+    const { socket, allUsers } = useSocket(data?.idToken)
 
     // Get current user and other users
     const { currentUser, otherUsers } = useCurrentUser(allUsers, data?.user)
@@ -37,8 +33,7 @@ export default function YOTTChatRooms() {
                             Ready to Chat?
                         </p>
                         <p className="text-purple-500">
-                            Choose a channel or direct message to get
-                            started
+                            Choose a channel or direct message to get started
                         </p>
                     </div>
                 </div>
@@ -46,13 +41,8 @@ export default function YOTTChatRooms() {
 
             {/* Online Users Panel */}
             <div className="w-80 bg-white rounded-lg shadow-lg">
-                <UsersPanel
-                    allUsers={otherUsers}
-                    userCount={userCount}
-                    currentUser={currentUser}
-                />
+                <UsersPanel allUsers={otherUsers} currentUser={currentUser} />
             </div>
         </div>
     )
 }
-

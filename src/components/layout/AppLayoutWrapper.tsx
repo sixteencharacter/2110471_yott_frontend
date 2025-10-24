@@ -20,22 +20,16 @@ export default function AppLayoutWrapper({ children }: AppLayoutWrapperProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    
+
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
     const [activeRoom, setActiveRoom] = useState(0)
-    
+
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
         data?.idToken
     )
-    const {
-        socket,
-        allUsers,
-        userCount,
-        socketError,
-        clearSocketError,
-        messages,
-    } = useSocket(data?.idToken)
+    const { socket, allUsers, socketError, clearSocketError, messages } =
+        useSocket(data?.idToken)
 
     // Get current user and other users
     const { currentUser, otherUsers } = useCurrentUser(allUsers, data?.user)
@@ -74,7 +68,9 @@ export default function AppLayoutWrapper({ children }: AppLayoutWrapperProps) {
     )
 
     const groupRooms = filteredRooms.filter((r: any) => r.is_groupchat === true)
-    const privateRooms = filteredRooms.filter((r: any) => r.is_groupchat === false)
+    const privateRooms = filteredRooms.filter(
+        (r: any) => r.is_groupchat === false
+    )
 
     // Initialize sticker functionality (for pages that need it)
     const {
@@ -96,7 +92,7 @@ export default function AppLayoutWrapper({ children }: AppLayoutWrapperProps) {
     })
 
     // Don't show layout on auth pages
-    if (pathname?.startsWith('/auth/')) {
+    if (pathname?.startsWith("/auth/")) {
         return <>{children}</>
     }
 
@@ -132,9 +128,7 @@ export default function AppLayoutWrapper({ children }: AppLayoutWrapperProps) {
             />
 
             {/* Main Content Area */}
-            <div className="flex-1">
-                {children}
-            </div>
+            <div className="flex-1">{children}</div>
 
             {/* Create DM Modal */}
             <CreateDMModal
