@@ -6,11 +6,9 @@ import { off } from "process"
 import { Person } from "@/types/person"
 export default function UsersPanel({
     allUsers,
-    userCount,
     currentUser,
 }: {
     allUsers: Person[]
-    userCount: number
     currentUser: Person | null
 }) {
     const uniqueUsers = React.useMemo(() => {
@@ -38,7 +36,11 @@ export default function UsersPanel({
         <div className="bg-purple-500/20 border border-purple-300 rounded-lg p-4 space-y-4 h-full overflow-y-auto">
             <h3 className="text-lg font-serif font-bold text-green-600 flex items-center gap-2 sticky top-0">
                 <Users size={20} className="text-purple-400" />
-                Online ({userCount})
+                Online (
+                {uniqueUsers.online.filter(
+                    (user: Person) => user.status === "online"
+                ).length + 1}
+                )
             </h3>
             <div className="space-y-3">
                 {currentUser && (
