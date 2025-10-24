@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/providers/SessionProvider";
+import AppLayoutWrapper from "../components/layout/Sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +19,8 @@ export const metadata: Metadata = {
   description: "Ye Olde Tongue Twister",
 };
 
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +36,9 @@ export default function RootLayout({
             refetchOnWindowFocus={typeof navigator !== "undefined" && navigator.onLine}
             refetchWhenOffline={false}
           >
-            {children}
+            <AppLayoutWrapper>
+              {children}
+            </AppLayoutWrapper>
           </SessionProvider>
         </body>
       </html>
