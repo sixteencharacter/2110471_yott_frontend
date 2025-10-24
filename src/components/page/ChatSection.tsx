@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect } from "react"
 import { Hash, Lock, Smile, Play } from "lucide-react"
+import { Message } from "@/types/message"
 
 export default function ChatSection({
     activeRoomData,
@@ -13,7 +14,7 @@ export default function ChatSection({
 
     // Filter messages for current room
     const roomMessages = allMessages.filter(
-        (msg: any) => msg.cid === activeRoomData?.cid
+        (msg: Message) => msg.cid === activeRoomData?.cid
     )
 
     const handleSendMessage = () => {

@@ -10,22 +10,25 @@ import ChatSection from "@/components/page/ChatSection"
 import CreateDMModal from "@/components/page/CreateDMModal"
 import { useSocket } from "@/components/hook/useSocket"
 import { useChatRooms } from "@/components/hook/useChatRooms"
-import { useOnlineUsers } from "@/components/hook/useOnlineUsers"
 import { useCreateDM } from "@/components/hook/useCreateDM"
 import { useCurrentUser } from "@/components/hook/useCurrentUser"
 
 export default function ChatRoom() {
+    // Initialize page state
     const { data, update, status } = useSession()
     const router = useRouter()
     const searchParams = useSearchParams()
     const roomId = searchParams.get("roomId")
 
+    // Initialize React state
     const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : 1)
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
         data?.idToken
     )
+
+    // Socket Initialization
     const {
         socket,
         allUsers,
@@ -54,11 +57,9 @@ export default function ChatRoom() {
             console.log("Sticker sent:", sticker)
         },
     })
+
     // Get current user and other users
     const { currentUser, otherUsers } = useCurrentUser(allUsers, data?.user)
-
-    // Transform online users for CreateDM modal, excluding current user
-    const availableUsers = useOnlineUsers(allUsers, currentUser)
 
     const handleCreateDM = useCreateDM(
         socket,
@@ -83,6 +84,12 @@ export default function ChatRoom() {
         setActiveRoom(roomId)
         router.push(`/chat?roomId=${roomId}`)
     }
+
+    React.useEffect(() => {
+        if (socket && roomId) {
+            socket.emit("join_room", roomId)
+        }
+    }, [socket])
 
     return (
         <div className="h-screen flex bg-purple-200 gap-4 p-4">
