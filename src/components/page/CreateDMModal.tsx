@@ -2,6 +2,7 @@
 import React, { useState } from "react"
 import { Search, X } from "lucide-react"
 import { UserAvatar } from "../userAvatar"
+import { Person } from "@/types/person"
 
 const CreateDMModal = ({
     isOpen,
@@ -11,8 +12,8 @@ const CreateDMModal = ({
 }: {
     isOpen: boolean
     onClose: () => void
-    onCreateDM: (user: any) => void
-    allUsers: any[]
+    onCreateDM: (user: Person) => void
+    allUsers: Person[]
 }) => {
     const [searchTerm, setSearchTerm] = useState("")
     try {
@@ -62,9 +63,9 @@ const CreateDMModal = ({
                             filtered.map((user, index) => (
                                 <button
                                     key={
-                                        user.keycloak_id ||
+                                        user.uid ||
                                         user.username ||
-                                        user.id ||
+                                        user.email ||
                                         index
                                     }
                                     onClick={() => {

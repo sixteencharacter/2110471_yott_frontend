@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import { apiClient } from "@/lib/apiClient"
+import { Chat } from "@/types/chat"
 
 export function useChatRooms(token?: string) {
-    const [chatRooms, setChatRooms] = useState<any[]>([])
+    const [chatRooms, setChatRooms] = useState<Chat[]>([])
     const [isInited, setInited] = useState<boolean>(false)
 
     const fetchChatRooms = async () => {
@@ -13,11 +14,10 @@ export function useChatRooms(token?: string) {
             })
 
             // Map backend data to UI format
-            const mappedRooms = res.data.map((room: any) => ({
-                id: room.cid,
-                type: room.is_groupchat ? "group" : "private",
+            const mappedRooms = res.data.map((room: Chat) => ({
+                cid: room.cid,
+                is_groupchat: room.is_groupchat,
                 name: room.name,
-                lastMessage: "No messages yet",
                 unread: 0,
             }))
 

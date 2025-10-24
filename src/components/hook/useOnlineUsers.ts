@@ -1,19 +1,20 @@
+import { Person } from "@/types/person"
 import { useMemo } from "react"
 
-export function useOnlineUsers(allUsers: any[], currentUser: any) {
+export function useOnlineUsers(allUsers: Person[], currentUser: Person | null) {
     return useMemo(() => {
         return allUsers
             .filter((user) => {
                 if (!currentUser) return true
                 return !(
-                    user.keycloak_id === currentUser.keycloak_id ||
+                    user.uid === currentUser.uid ||
                     user.username === currentUser.username ||
                     user.display_name === currentUser.display_name ||
                     user.email === currentUser.email
                 )
             })
             .map((user, index) => ({
-                id: user.keycloak_id || user.username || index,
+                id: user.uid || user.username || index,
                 name: user.username || user.display_name || "Unknown User",
                 isOnline: user.status === "online",
             }))

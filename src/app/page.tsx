@@ -38,7 +38,7 @@ export default function YOTTChatRooms() {
     // ...existing code...
 
     // Initialize sticker functionality
-    const activeRoomData = chatRooms.find((r) => r.id === activeRoom)
+    const activeRoomData = chatRooms.find((r) => r.cid === activeRoom)
     const {
         stickerPacks,
         selectedPack,
@@ -51,7 +51,7 @@ export default function YOTTChatRooms() {
         error: stickerError,
     } = useSticker({
         token: data?.idToken,
-        roomId: activeRoomData?.id,
+        roomId: activeRoomData?.cid,
         onStickerSent: (sticker) => {
             console.log("Sticker sent:", sticker)
         },
@@ -73,8 +73,8 @@ export default function YOTTChatRooms() {
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const groupRooms = filteredRooms.filter((r) => r.type === "group")
-    const privateRooms = filteredRooms.filter((r) => r.type === "private")
+    const groupRooms = filteredRooms.filter((r) => r.is_groupchat === true)
+    const privateRooms = filteredRooms.filter((r) => r.is_groupchat === false)
 
     // Handle room selection - navigate to chat page
     const handleRoomSelect = (roomId: number) => {

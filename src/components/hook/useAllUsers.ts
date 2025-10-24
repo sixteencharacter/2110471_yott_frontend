@@ -1,6 +1,7 @@
+import { Person } from "@/types/person"
 import { useMemo } from "react"
 
-export function useAllUsers(onlineUsers: any[], currentUser: any) {
+export function useAllUsers(onlineUsers: Person[], currentUser: Person | null) {
     return useMemo(() => {
         // For now, we only have online users from socket
         // In a real app, you'd fetch all users from an API endpoint
@@ -8,15 +9,15 @@ export function useAllUsers(onlineUsers: any[], currentUser: any) {
             .filter((user) => {
                 if (!currentUser) return true
                 return !(
-                    user.keycloak_id === currentUser.keycloak_id ||
-                    user.username === currentUser.username ||
-                    user.display_name === currentUser.display_name ||
+                    user.uid === currentUser.uid ||
+                    user.given_name === currentUser.given_name ||
+                    user.family_name === currentUser.family_name ||
                     user.email === currentUser.email
                 )
             })
             .map((user, index) => ({
-                id: user.keycloak_id || user.username || index,
-                name: user.username || user.display_name || "Unknown User",
+                id: user.uid || index,
+                name: user.given_name || user.family_name || "Unknown User",
                 isOnline: user.status === "online",
             }))
     }, [onlineUsers, currentUser])
