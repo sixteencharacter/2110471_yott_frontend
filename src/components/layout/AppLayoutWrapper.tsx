@@ -69,12 +69,12 @@ export default function AppLayoutWrapper({ children }: AppLayoutWrapperProps) {
     )
 
     // Filter rooms based on search
-    const filteredRooms = chatRooms.filter((room) =>
+    const filteredRooms = chatRooms.filter((room: any) =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const groupRooms = filteredRooms.filter((r) => r.is_groupchat === true)
-    const privateRooms = filteredRooms.filter((r) => r.is_groupchat === false)
+    const groupRooms = filteredRooms.filter((r: any) => r.is_groupchat === true)
+    const privateRooms = filteredRooms.filter((r: any) => r.is_groupchat === false)
 
     // Initialize sticker functionality (for pages that need it)
     const {
@@ -89,8 +89,8 @@ export default function AppLayoutWrapper({ children }: AppLayoutWrapperProps) {
         error: stickerError,
     } = useSticker({
         token: data?.idToken,
-        roomId: 1, // Default room, individual pages can override
-        onStickerSent: (sticker) => {
+        roomId: 1,
+        onStickerSent: (sticker: any) => {
             console.log("Sticker sent:", sticker)
         },
     })
