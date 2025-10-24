@@ -26,10 +26,14 @@ export default function ChatRoom() {
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
         data?.idToken
     )
-    const { socket, allUsers, userCount, socketError, clearSocketError } =
-        useSocket(data?.idToken)
-
-    // ...existing code...
+    const {
+        socket,
+        allUsers,
+        userCount,
+        socketError,
+        clearSocketError,
+        messages,
+    } = useSocket(data?.idToken)
 
     // Initialize sticker functionality
     const activeRoomData = chatRooms.find((r) => r.cid === activeRoom)
@@ -117,6 +121,9 @@ export default function ChatRoom() {
                 <ChatSection
                     activeRoomData={activeRoomData}
                     openStickerModal={openStickerModal}
+                    socket={socket}
+                    currentUser={currentUser}
+                    messages={messages}
                 />
 
                 {/* Online Users Panel */}

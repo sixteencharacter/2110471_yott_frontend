@@ -8,6 +8,7 @@ export function useSocket(token?: string) {
     const [allUsers, setAllUsers] = useState<Person[]>([])
     const [userCount, setUserCount] = useState<number>(0)
     const [socketError, setSocketError] = useState<string | null>(null)
+    const [messages, setMessages] = useState<any[]>([])
 
     useEffect(() => {
         if (!token) return
@@ -57,8 +58,9 @@ export function useSocket(token?: string) {
             console.error("Chat creation error:", error)
             setSocketError(error.message || "Failed to create chat")
         })
-        socketConnection.on("receive_msg", (message) => {
-            console.log("Receive message:", message)
+        socketConnection.on("receive_msg", (messageData) => {
+            console.log("Received message:", messageData)
+            setMessages((prev) => [...prev, messageData])
         })
         return () => {
             socketConnection.disconnect()
@@ -78,5 +80,12 @@ export function useSocket(token?: string) {
     // Function to clear error
     const clearSocketError = () => setSocketError(null)
 
-    return { socket, allUsers, userCount, socketError, clearSocketError }
+    return {
+        socket,
+        allUsers,
+        userCount,
+        socketError,
+        clearSocketError,
+        messages,
+    }
 }
