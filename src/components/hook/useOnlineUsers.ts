@@ -8,14 +8,14 @@ export function useOnlineUsers(allUsers: Person[], currentUser: Person | null) {
                 if (!currentUser) return true
                 return !(
                     user.uid === currentUser.uid ||
-                    user.username === currentUser.username ||
+                    user.given_name === currentUser.given_name ||
                     user.display_name === currentUser.display_name ||
                     user.email === currentUser.email
                 )
             })
             .map((user, index) => ({
-                id: user.uid || user.username || index,
-                name: user.username || user.display_name || "Unknown User",
+                id: user.uid || user.given_name || index,
+                name: user.given_name || user.display_name || "Unknown User",
                 isOnline: user.status === "online",
             }))
     }, [allUsers, currentUser])

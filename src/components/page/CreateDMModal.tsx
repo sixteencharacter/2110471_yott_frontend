@@ -18,7 +18,7 @@ const CreateDMModal = ({
     const [searchTerm, setSearchTerm] = useState("")
     try {
         const filtered = allUsers.filter((user) =>
-            (user.display_name || user.username || "")
+            (user.display_name || "")
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase())
         )
@@ -62,12 +62,7 @@ const CreateDMModal = ({
                         ) : (
                             filtered.map((user, index) => (
                                 <button
-                                    key={
-                                        user.uid ||
-                                        user.username ||
-                                        user.email ||
-                                        index
-                                    }
+                                    key={user.uid || user.email || index}
                                     onClick={() => {
                                         onCreateDM(user)
                                         onClose()
@@ -75,18 +70,13 @@ const CreateDMModal = ({
                                     className="w-full flex items-center gap-3 p-3 hover:bg-purple-500 rounded-lg transition text-left"
                                 >
                                     <UserAvatar
-                                        name={
-                                            user.display_name ||
-                                            user.username ||
-                                            "Unknown"
-                                        }
+                                        name={user.display_name || "Unknown"}
                                         isOnline={user.status === "online"}
                                         size="md"
                                     />
                                     <div className="flex-1">
                                         <p className="text-white font-serif font-semibold">
                                             {user.display_name ||
-                                                user.username ||
                                                 "Unknown User"}
                                         </p>
                                         <p className="text-xs text-white/60">
