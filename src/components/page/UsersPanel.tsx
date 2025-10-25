@@ -19,7 +19,6 @@ export default function UsersPanel({
                 userMap.set(key, user)
             }
         })
-        console.log("All users map:", currentUser)
         const allUsers_map = Array.from(userMap.values())
 
         const onlineUsersList = allUsers_map.filter(

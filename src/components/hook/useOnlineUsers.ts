@@ -63,7 +63,6 @@ export function useOnlineUsers(
                     }
                 )
 
-                console.log("Group users with status:", usersWithStatus)
                 setGroupUsers(usersWithStatus)
             } catch (err) {
                 console.error("Error fetching group users:", err)
