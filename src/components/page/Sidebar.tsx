@@ -3,6 +3,7 @@ import React from "react"
 import { LogOut, Plus, Search } from "lucide-react"
 import { signOut } from "next-auth/react"
 import ChatRoomItem from "./ChatRoomItem"
+import { Chat } from "@/types/chat"
 
 export default function Sidebar({
     searchTerm,
@@ -63,12 +64,12 @@ export default function Sidebar({
                             Channels
                         </h3>
                         <div className="space-y-1">
-                            {groupRooms.map((room: any) => (
+                            {groupRooms.map((room: Chat) => (
                                 <ChatRoomItem
-                                    key={room.id}
+                                    key={room.cid}
                                     room={room}
-                                    isActive={activeRoom === room.id}
-                                    onClick={() => setActiveRoom(room.id)}
+                                    isActive={activeRoom === room.cid}
+                                    onClick={() => setActiveRoom(room.cid)}
                                 />
                             ))}
                         </div>
@@ -81,12 +82,12 @@ export default function Sidebar({
                             Direct Messages
                         </h3>
                         <div className="space-y-1">
-                            {privateRooms.map((room: any) => (
+                            {privateRooms.map((room: Chat) => (
                                 <ChatRoomItem
-                                    key={room.id}
+                                    key={room.cid}
                                     room={room}
-                                    isActive={activeRoom === room.id}
-                                    onClick={() => setActiveRoom(room.id)}
+                                    isActive={activeRoom === room.cid}
+                                    onClick={() => setActiveRoom(room.cid)}
                                 />
                             ))}
                         </div>

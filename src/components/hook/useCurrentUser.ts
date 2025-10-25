@@ -1,8 +1,9 @@
+import { Person } from "@/types/person"
 import { useState, useEffect } from "react"
 
-export function useCurrentUser(allUsers: any[], sessionUser: any) {
-    const [currentUser, setCurrentUser] = useState<any>(null)
-    const [otherUsers, setOtherUsers] = useState<any[]>([])
+export function useCurrentUser(allUsers: Person[], sessionUser: any) {
+    const [currentUser, setCurrentUser] = useState<Person | null>(null)
+    const [otherUsers, setOtherUsers] = useState<Person[]>([])
 
     useEffect(() => {
         if (!sessionUser || !allUsers?.length) {
@@ -12,11 +13,11 @@ export function useCurrentUser(allUsers: any[], sessionUser: any) {
         }
 
         // Find current user
-        const match = allUsers.find((user: any) => {
+        const match = allUsers.find((user: Person) => {
             return (
-                user.username === sessionUser.name ||
-                user.display_name === sessionUser.name ||
-                user.name === sessionUser.name ||
+                user.uid === sessionUser.uid ||
+                user.given_name === sessionUser.given_name ||
+                user.display_name === sessionUser.display_name ||
                 user.email === sessionUser.email
             )
         })
@@ -24,11 +25,11 @@ export function useCurrentUser(allUsers: any[], sessionUser: any) {
         setCurrentUser(match || null)
 
         // Filter other users (excluding current user)
-        const others = allUsers.filter((user: any) => {
+        const others = allUsers.filter((user: Person) => {
             if (!match) return true
             return !(
                 user.uid === match.uid ||
-                user.username === match.username ||
+                user.given_name === match.given_name ||
                 user.display_name === match.display_name ||
                 user.email === match.email
             )

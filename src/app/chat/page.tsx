@@ -6,33 +6,53 @@ import { YOTTLoading } from "@/components/loading"
 import { StickerModal, useSticker } from "@/components/sticker"
 import Sidebar from "@/components/page/Sidebar"
 import OnlineUsersPanel from "@/components/page/UsersPanel"
+import GroupOnlineUsersPanel from "@/components/page/GroupOnlineUsersPanel"
 import ChatSection from "@/components/page/ChatSection"
 import CreateDMModal from "@/components/page/CreateDMModal"
 import { useSocket } from "@/components/hook/useSocket"
 import { useChatRooms } from "@/components/hook/useChatRooms"
-import { useOnlineUsers } from "@/components/hook/useOnlineUsers"
 import { useCreateDM } from "@/components/hook/useCreateDM"
 import { useCurrentUser } from "@/components/hook/useCurrentUser"
 
 export default function ChatRoom() {
+    // Initialize page state
     const { data, update, status } = useSession()
     const router = useRouter()
     const searchParams = useSearchParams()
     const roomId = searchParams.get("roomId")
 
+    // Initialize React state - use roomId from URL
     const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : 1)
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
         data?.idToken
     )
-    const { socket, allUsers, userCount, socketError, clearSocketError } =
+
+    // Sync activeRoom with URL parameter
+    React.useEffect(() => {
+        if (roomId) {
+            setActiveRoom(parseInt(roomId))
+        }
+    }, [roomId])
+
+    // Socket Initialization
+    const { socket, allUsers, socketError, clearSocketError, messages } =
         useSocket(data?.idToken)
 
-    // ...existing code...
-
     // Initialize sticker functionality
-    const activeRoomData = chatRooms.find((r) => r.id === activeRoom)
+    const activeRoomData = chatRooms.find((r) => r.cid === activeRoom)
+
+    // Debug log
+    React.useEffect(() => {
+        console.log(
+            "Chat Page - activeRoom:",
+            activeRoom,
+            "activeRoomData:",
+            activeRoomData
+        )
+    }, [activeRoom, activeRoomData])
+
     const {
         stickerPacks,
         selectedPack,
@@ -45,7 +65,7 @@ export default function ChatRoom() {
         error: stickerError,
     } = useSticker({
         token: data?.idToken,
-        roomId: activeRoomData?.id,
+        roomId: activeRoomData?.cid,
         onStickerSent: (sticker) => {
             console.log("Sticker sent:", sticker)
         },
@@ -53,9 +73,6 @@ export default function ChatRoom() {
 
     // Get current user and other users
     const { currentUser, otherUsers } = useCurrentUser(allUsers, data?.user)
-
-    // Transform online users for CreateDM modal, excluding current user
-    const availableUsers = useOnlineUsers(allUsers, currentUser)
 
     const handleCreateDM = useCreateDM(
         socket,
@@ -69,8 +86,8 @@ export default function ChatRoom() {
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const groupRooms = filteredRooms.filter((r) => r.type === "group")
-    const privateRooms = filteredRooms.filter((r) => r.type === "private")
+    const groupRooms = filteredRooms.filter((r) => r.is_groupchat === true)
+    const privateRooms = filteredRooms.filter((r) => r.is_groupchat === false)
 
     // Handle room selection within chat page
     const handleRoomSelect = (roomId: number) => {
@@ -81,8 +98,14 @@ export default function ChatRoom() {
         router.push(`/chat?roomId=${roomId}`)
     }
 
+    React.useEffect(() => {
+        if (socket && activeRoom) {
+            socket.emit("join_chat", activeRoom)
+        }
+    }, [socket, activeRoom])
+
     return (
-        <div className="h-screen flex bg-purple-200 gap-4 p-4">
+        <div className="h-full flex bg-purple-200 gap-4 p-4">
             <YOTTLoading show={!isInited} />
 
             {/* Error Notification */}
@@ -100,53 +123,27 @@ export default function ChatRoom() {
                 </div>
             )}
 
-            {/* Sidebar */}
-            <Sidebar
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                showCreateDM={showCreateDM}
-                setShowCreateDM={setShowCreateDM}
-                groupRooms={groupRooms}
-                privateRooms={privateRooms}
-                activeRoom={activeRoom}
-                setActiveRoom={handleRoomSelect}
-            />
-
             {/* Main Content Area */}
             <div className="flex-1 flex gap-4">
                 {/* Chat Area */}
                 <ChatSection
+                    key={activeRoom} // Force re-render when room changes
                     activeRoomData={activeRoomData}
                     openStickerModal={openStickerModal}
+                    socket={socket}
+                    currentUser={currentUser}
+                    messages={messages}
                 />
 
-                {/* Online Users Panel */}
-                <div className="w-80 bg-white rounded-lg shadow-lg">
-                    <OnlineUsersPanel
-                        allUsers={otherUsers}
-                        userCount={userCount}
-                        currentUser={currentUser}
-                    />
-                </div>
+                {/* Group Members Panel */}
+                <GroupOnlineUsersPanel
+                    token={data?.idToken}
+                    roomId={activeRoom}
+                    currentUser={currentUser}
+                    allUsers={allUsers}
+                    groupName={activeRoomData?.name || "Group Chat"}
+                />
             </div>
-
-            {/* Create DM Modal */}
-            <CreateDMModal
-                isOpen={showCreateDM}
-                onClose={() => setShowCreateDM(false)}
-                onCreateDM={handleCreateDM}
-                allUsers={otherUsers}
-            />
-
-            {/* Sticker Modal */}
-            <StickerModal
-                isOpen={showStickerModal}
-                onClose={closeStickerModal}
-                onSelectSticker={handleSelectSticker}
-                stickerPacks={stickerPacks}
-                selectedPack={selectedPack}
-                onPackChange={setSelectedPack}
-            />
         </div>
     )
 }

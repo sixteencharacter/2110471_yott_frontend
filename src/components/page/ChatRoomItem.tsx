@@ -1,17 +1,18 @@
 "use client"
 import React from "react"
 import { Hash, Lock } from "lucide-react"
+import { Chat } from "@/types/chat"
 
 const ChatRoomItem = ({
     room,
     isActive,
     onClick,
 }: {
-    room: any
+    room: Chat
     isActive: boolean
     onClick: () => void
 }) => {
-    const isGroup = room.type === "group"
+    const isGroup = room.is_groupchat === true
 
     return (
         <button
