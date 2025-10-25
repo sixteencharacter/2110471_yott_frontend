@@ -1,7 +1,7 @@
 import React from "react"
 import { Users, Hash } from "lucide-react"
 import { UserAvatar } from "../userAvatar"
-import { useGroupUsers } from "@/components/hook/useGroupUsers"
+import { useOnlineUsers } from "@/components/hook/useOnlineUsers"
 import { Person } from "@/types/person"
 
 interface GroupOnlineUsersPanelProps {
@@ -19,10 +19,14 @@ export default function GroupOnlineUsersPanel({
     allUsers,
     groupName = "Group Chat",
 }: GroupOnlineUsersPanelProps) {
-    const { groupUsers, loading, error } = useGroupUsers(
-        token,
-        roomId,
-        allUsers
+    const { rawUsers: groupUsers, loading, error } = useOnlineUsers(
+        allUsers || [],
+        currentUser || null,
+        {
+            token,
+            roomId,
+            fetchGroupUsers: true
+        }
     )
 
     // Filter out current user and organize by status
