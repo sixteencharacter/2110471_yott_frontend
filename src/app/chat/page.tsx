@@ -6,6 +6,7 @@ import { YOTTLoading } from "@/components/loading"
 import { StickerModal, useSticker } from "@/components/sticker"
 import Sidebar from "@/components/page/Sidebar"
 import OnlineUsersPanel from "@/components/page/UsersPanel"
+import GroupOnlineUsersPanel from "@/components/page/GroupOnlineUsersPanel"
 import ChatSection from "@/components/page/ChatSection"
 import CreateDMModal from "@/components/page/CreateDMModal"
 import { useSocket } from "@/components/hook/useSocket"
@@ -134,13 +135,14 @@ export default function ChatRoom() {
                     messages={messages}
                 />
 
-                {/* Online Users Panel */}
-                <div className="w-80 bg-white rounded-lg shadow-lg">
-                    <OnlineUsersPanel
-                        allUsers={otherUsers}
-                        currentUser={currentUser}
-                    />
-                </div>
+                {/* Group Members Panel */}
+                <GroupOnlineUsersPanel
+                    token={data?.idToken}
+                    roomId={activeRoom}
+                    currentUser={currentUser}
+                    allUsers={allUsers}
+                    groupName={activeRoomData?.name || "Group Chat"}
+                />
             </div>
         </div>
     )

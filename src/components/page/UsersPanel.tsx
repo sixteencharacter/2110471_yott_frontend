@@ -14,12 +14,11 @@ export default function UsersPanel({
     const uniqueUsers = React.useMemo(() => {
         const userMap = new Map()
         allUsers.forEach((user: Person) => {
-            const key = user.username
+            const key = user.uid
             if (key && !userMap.has(key)) {
                 userMap.set(key, user)
             }
         })
-
         const allUsers_map = Array.from(userMap.values())
 
         const onlineUsersList = allUsers_map.filter(
@@ -46,13 +45,13 @@ export default function UsersPanel({
                 {currentUser && (
                     <div className="flex items-center gap-3 bg-purple-400/30 p-2 rounded border-2 border-purple-400">
                         <UserAvatar
-                            name={currentUser.username || "User"}
+                            name={currentUser.display_name || "User"}
                             isOnline={true}
                             size="sm"
                         />
                         <div className="flex-1 min-w-0">
                             <p className="text-purple-600 font-serif text-sm font-semibold truncate">
-                                {currentUser.username || "Unknown User"}
+                                {currentUser.display_name || "Unknown User"}
                             </p>
                             <p className="text-xs text-purple-500">(me)</p>
                         </div>
@@ -68,15 +67,15 @@ export default function UsersPanel({
                                 (user: Person, index: number) => (
                                     <div
                                         key={`online-${
-                                            user.uid || user.username
+                                            user.uid || user.display_name
                                         }-${index}`}
                                         className="flex items-center gap-3 hover:bg-purple-400/20 p-2 rounded transition cursor-pointer"
                                     >
                                         <div className="relative">
                                             <UserAvatar
                                                 name={
-                                                    user.username ||
-                                                    user.display_name
+                                                    user.display_name ||
+                                                    "Unknown User"
                                                 }
                                                 isOnline={true}
                                                 size="sm"
@@ -84,10 +83,12 @@ export default function UsersPanel({
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-purple-600 font-serif text-sm font-semibold truncate">
-                                                {user.username}
+                                                {user.display_name ||
+                                                    "Unknown User"}
                                             </p>
                                             <p className="text-xs text-purple-500">
-                                                {user.display_name}
+                                                {user.display_name ||
+                                                    "Unknown User"}
                                             </p>
                                         </div>
                                     </div>
@@ -124,15 +125,15 @@ export default function UsersPanel({
                                 .map((user: Person, index: number) => (
                                     <div
                                         key={`offline-${
-                                            user.uid || user.username
+                                            user.uid || user.display_name
                                         }-${index}`}
                                         className="flex items-center gap-3 hover:bg-gray-200/50 p-2 rounded transition cursor-pointer opacity-70"
                                     >
                                         <div className="relative">
                                             <UserAvatar
                                                 name={
-                                                    user.username ||
-                                                    user.display_name
+                                                    user.display_name ||
+                                                    "Unknown User"
                                                 }
                                                 isOnline={false}
                                                 size="sm"
@@ -140,10 +141,12 @@ export default function UsersPanel({
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-gray-600 font-serif text-sm font-semibold truncate">
-                                                {user.username}
+                                                {user.display_name ||
+                                                    "Unknown User"}
                                             </p>
                                             <p className="text-xs text-gray-500">
-                                                {user.display_name}
+                                                {user.display_name ||
+                                                    "Unknown User"}
                                             </p>
                                         </div>
                                     </div>

@@ -16,7 +16,7 @@ export function useCurrentUser(allUsers: Person[], sessionUser: any) {
         const match = allUsers.find((user: Person) => {
             return (
                 user.uid === sessionUser.uid ||
-                user.username === sessionUser.username ||
+                user.given_name === sessionUser.given_name ||
                 user.display_name === sessionUser.display_name ||
                 user.email === sessionUser.email
             )
@@ -29,7 +29,7 @@ export function useCurrentUser(allUsers: Person[], sessionUser: any) {
             if (!match) return true
             return !(
                 user.uid === match.uid ||
-                user.username === match.username ||
+                user.given_name === match.given_name ||
                 user.display_name === match.display_name ||
                 user.email === match.email
             )
