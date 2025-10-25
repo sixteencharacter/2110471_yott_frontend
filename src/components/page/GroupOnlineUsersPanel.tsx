@@ -19,15 +19,15 @@ export default function GroupOnlineUsersPanel({
     allUsers,
     groupName = "Group Chat",
 }: GroupOnlineUsersPanelProps) {
-    const { rawUsers: groupUsers, loading, error } = useOnlineUsers(
-        allUsers || [],
-        currentUser || null,
-        {
-            token,
-            roomId,
-            fetchGroupUsers: true
-        }
-    )
+    const {
+        rawUsers: groupUsers,
+        loading,
+        error,
+    } = useOnlineUsers(allUsers || [], currentUser || null, {
+        token,
+        roomId,
+        fetchGroupUsers: true,
+    })
 
     // Filter out current user and organize by status
     const otherUsers = groupUsers.filter(
@@ -48,7 +48,6 @@ export default function GroupOnlineUsersPanel({
         return { online: onlineUsersList, offline: offlineUsersList }
     }, [otherUsers])
 
-    console.log("Other users in group:", otherUsers)
     if (loading) {
         return (
             <div className="w-80 bg-white rounded-lg shadow-lg">

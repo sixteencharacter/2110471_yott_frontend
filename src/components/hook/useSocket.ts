@@ -36,7 +36,6 @@ export function useSocket(token?: string) {
             console.error("Socket error:", error)
         })
         socketConnection.on("online_users_update", (data) => {
-            console.log("Online users update:", data.users, data.total_count)
             setAllUsers(data.users || [])
         })
         socketConnection.on("chat_created", (chat) => {
