@@ -21,7 +21,7 @@ export function useOnlineUsers(
     // Fetch group users if requested
     useEffect(() => {
         if (!options?.fetchGroupUsers || !options?.token || !options?.roomId) {
-            setGroupUsers([])
+            setGroupUsers(allUsers)
             return
         }
 
