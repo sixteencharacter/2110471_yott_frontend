@@ -22,7 +22,9 @@ export default function ChatRoom() {
     const roomId = searchParams.get("roomId")
 
     // Initialize React state - use roomId from URL
-    const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : undefined)
+    const [activeRoom, setActiveRoom] = useState(
+        roomId ? parseInt(roomId) : undefined
+    )
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
@@ -73,36 +75,6 @@ export default function ChatRoom() {
 
     // Get current user and other users
     const { currentUser, otherUsers } = useCurrentUser(allUsers, data?.user)
-
-    const handleCreateDM = useCreateDM(
-        socket,
-        chatRooms,
-        setActiveRoom,
-        currentUser,
-        refreshChatRooms
-    )
-
-    const filteredRooms = chatRooms.filter((room) =>
-        room.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-
-    const groupRooms = filteredRooms.filter((r) => r.is_groupchat === true)
-    const privateRooms = filteredRooms.filter((r) => r.is_groupchat === false)
-
-    // Handle room selection within chat page
-    const handleRoomSelect = (roomId: number) => {
-        if (socket) {
-            socket?.emit("join_chat", roomId)
-        }
-        setActiveRoom(roomId)
-        router.push(`/chat?roomId=${roomId}`)
-    }
-
-    React.useEffect(() => {
-        if (socket && activeRoom) {
-            socket.emit("join_chat", activeRoom)
-        }
-    }, [socket, activeRoom])
 
     return (
         <div className="h-full flex bg-purple-200 gap-4 p-4">
