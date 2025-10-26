@@ -96,6 +96,7 @@ const CreateDMModal = ({
                     </div>
 
                     {/* Selected users box */}
+                    {chatType === "dm" && (
                     <div className="mt-3 border border-white/10 rounded-lg p-3 bg-white/5">
                         <h3 className="text-sm text-white/80 font-medium mb-2 ">{chatType === "dm" ? "Selected user" : "Selected users"}</h3>
                         {selectedUsers.length === 0 ? (
@@ -114,10 +115,12 @@ const CreateDMModal = ({
                                     </div>
                                 ))}
                             </div>
-                        )}
+                        )} 
                     </div>
+                    )}
 
                     {/* Search box */}
+                    {chatType === "dm" && (
                     <div className="relative">
                         <Search
                             className="absolute left-3 top-3 text-white/50"
@@ -131,8 +134,10 @@ const CreateDMModal = ({
                             className="w-full bg-purple-700 border border-purple-500 rounded-lg pl-10 pr-4 py-2 text-white placeholder-white/50 focus:outline-none focus:border-white"
                         />
                     </div>
+                    )}
 
                     {/* User list */}
+                    {chatType === "dm" && (
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                         {filtered.length === 0 ? (
                             <p className="text-center text-white/70 py-4">
@@ -181,6 +186,7 @@ const CreateDMModal = ({
                             })
                         )}
                     </div>
+                    )}
 
                     {/* Actions */}
                     <div className="flex items-center justify-end gap-2">
