@@ -22,7 +22,7 @@ export default function ChatRoom() {
     const roomId = searchParams.get("roomId")
 
     // Initialize React state - use roomId from URL
-    const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : 1)
+    const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : undefined)
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
