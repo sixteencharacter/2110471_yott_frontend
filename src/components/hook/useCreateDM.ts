@@ -14,11 +14,16 @@ export function useCreateDM(
     (payload: any) => {
       if (payload.type === "dm") {
           if (socket) {
+            const other = payload.users[0]
+            const nameParts = [other?.given_name, other?.family_name].filter(Boolean).join(" ")
+            const displayPart = other?.display_name ? ` (${other.display_name})` : ""
+            const chatName = `${nameParts}${displayPart}`.trim()
+
             const data = {
-              chat_name: payload.room_name,
+              chat_name: chatName || other?.display_name || "",
               is_groupchat: false,
-              member_ids: [currentUser?.uid, payload.users[0].uid],
-            };
+              member_ids: [currentUser?.uid, other?.uid],
+            }
             console.log(
               "Creating chatroom with users:",
               payload.users,

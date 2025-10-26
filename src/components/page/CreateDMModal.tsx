@@ -55,18 +55,20 @@ const CreateDMModal = ({
                     </div>
 
                     {/* Room name input */}
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            placeholder="Chat room name..."
-                            value={roomName}
-                            onChange={(e) => setRoomName(e.target.value)}
-                            className="w-full bg-purple-700 border border-purple-500 rounded-lg pl-3 pr-4 py-2 text-white placeholder-white/50 focus:outline-none focus:border-white"
-                        />
-                        {roomName.trim() === "" && (
-                            <p className="text-xs text-white/100 mt-1 font-bold">Enter a chat room name to enable creation.</p>
-                        )}
-                    </div>
+                    {chatType === "group" && (
+                        <div className="mt-2">
+                            <input
+                                type="text"
+                                placeholder="Chat room name..."
+                                value={roomName}
+                                onChange={(e) => setRoomName(e.target.value)}
+                                className="w-full bg-purple-700 border border-purple-500 rounded-lg pl-3 pr-4 py-2 text-white placeholder-white/50 focus:outline-none focus:border-white"
+                            />
+                            {roomName.trim() === "" && (
+                                <p className="text-xs text-white/100 mt-1 font-bold">Enter a chat room name to enable creation.</p>
+                            )}
+                        </div>
+                    )}
 
                     {/* Chat type box */}
                     <div className="mt-2 border border-white/10 rounded-lg p-3 bg-white/5">
