@@ -28,10 +28,7 @@ export function useCurrentUser(allUsers: Person[], sessionUser: any) {
         const others = allUsers.filter((user: Person) => {
             if (!match) return true
             return !(
-                user.uid === match.uid ||
-                user.given_name === match.given_name ||
-                user.display_name === match.display_name ||
-                user.email === match.email
+                user.uid === match.uid
             )
         })
         setOtherUsers(others)

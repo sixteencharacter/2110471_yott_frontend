@@ -6,6 +6,7 @@ import { io, Socket } from "socket.io-client"
 export function useSocket(token?: string) {
     const [socket, setSocket] = useState<Socket | null>(null)
     const [allUsers, setAllUsers] = useState<Person[]>([])
+    const [currentGroupUser , setcurrentGroupUser] = useState<Person[]>([]);
     const [socketError, setSocketError] = useState<string | null>(null)
     const [messages, setMessages] = useState<any[]>([])
 
@@ -59,6 +60,10 @@ export function useSocket(token?: string) {
             console.log("Received message:", messageData)
             setMessages((prev) => [...prev, messageData])
         })
+        socketConnection.on("chat_member_update",(messagedata)=>{
+            setcurrentGroupUser(messagedata);
+        })
+
         return () => {
             socketConnection.disconnect()
         }
@@ -83,5 +88,6 @@ export function useSocket(token?: string) {
         socketError,
         clearSocketError,
         messages,
+        currentGroupUser
     }
 }
