@@ -22,7 +22,9 @@ export default function ChatRoom() {
     const roomId = searchParams.get("roomId")
 
     // Initialize React state - use roomId from URL
-    const [activeRoom, setActiveRoom] = useState(roomId ? parseInt(roomId) : undefined)
+    const [activeRoom, setActiveRoom] = useState(
+        roomId ? parseInt(roomId) : undefined
+    )
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
@@ -37,12 +39,17 @@ export default function ChatRoom() {
     }, [roomId])
 
     // Socket Initialization
-    const { socket, allUsers, socketError, clearSocketError, messages, currentGroupUser } =
-        useSocket(data?.idToken)
+    const {
+        socket,
+        allUsers,
+        socketError,
+        clearSocketError,
+        messages,
+        currentGroupUser,
+    } = useSocket(data?.idToken)
 
     // Initialize sticker functionality
     const activeRoomData = chatRooms.find((r) => r.cid === activeRoom)
-
     // Debug log
     React.useEffect(() => {
         console.log(
@@ -105,7 +112,7 @@ export default function ChatRoom() {
     }, [socket, activeRoom])
 
     return (
-        <div className="h-full flex bg-purple-200 gap-4 p-4">
+        <div className="h-screen flex bg-purple-200 gap-4 p-4">
             <YOTTLoading show={!isInited} />
 
             {/* Error Notification */}
@@ -122,6 +129,18 @@ export default function ChatRoom() {
                     </div>
                 </div>
             )}
+
+            {/* Sidebar - merged from AppLayoutWrapper */}
+            <Sidebar
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                showCreateDM={showCreateDM}
+                setShowCreateDM={setShowCreateDM}
+                groupRooms={groupRooms}
+                privateRooms={privateRooms}
+                activeRoom={activeRoom}
+                setActiveRoom={handleRoomSelect}
+            />
 
             {/* Main Content Area */}
             <div className="flex-1 flex gap-4">
@@ -145,6 +164,24 @@ export default function ChatRoom() {
                     currentGroupUser={currentGroupUser}
                 />
             </div>
+
+            {/* Create DM Modal - merged from AppLayoutWrapper */}
+            <CreateDMModal
+                isOpen={showCreateDM}
+                onClose={() => setShowCreateDM(false)}
+                onCreateDM={handleCreateDM}
+                allUsers={otherUsers}
+            />
+
+            {/* Sticker Modal - merged from AppLayoutWrapper */}
+            <StickerModal
+                isOpen={showStickerModal}
+                onClose={closeStickerModal}
+                onSelectSticker={handleSelectSticker}
+                stickerPacks={stickerPacks}
+                selectedPack={selectedPack}
+                onPackChange={setSelectedPack}
+            />
         </div>
     )
 }
