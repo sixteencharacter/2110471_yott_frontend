@@ -12,6 +12,7 @@ interface UseOnlineUsersOptions {
 export function useOnlineUsers(
     allUsers: Person[],
     currentUser: Person | null,
+    currentGroupUser? : Person[],
     options?: UseOnlineUsersOptions
 ) {
     const [groupUsers, setGroupUsers] = useState<Person[]>([])
@@ -29,14 +30,8 @@ export function useOnlineUsers(
             setLoading(true)
             setError(null)
             try {
-                const response = await apiClient.get(
-                    `/v1/chats/${options.roomId}/members`,
-                    {
-                        headers: { Authorization: `Bearer ${options.token}` },
-                    }
-                )
-
-                const backendUsers = response.data.map((user: any) => ({
+                const response = currentGroupUser ?? [];
+                const backendUsers = response.map((user: any) => ({
                     uid: user.uid,
                     given_name: user.given_name,
                     family_name: user.family_name,
@@ -78,7 +73,7 @@ export function useOnlineUsers(
         }
 
         fetchGroupUsers()
-    }, [options?.token, options?.roomId, options?.fetchGroupUsers, allUsers])
+    }, [options?.token, options?.roomId, options?.fetchGroupUsers, allUsers,currentGroupUser])
 
     // Process users based on whether we're fetching group users or using all users
     const processedUsers = useMemo(() => {

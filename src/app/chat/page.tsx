@@ -37,7 +37,7 @@ export default function ChatRoom() {
     }, [roomId])
 
     // Socket Initialization
-    const { socket, allUsers, socketError, clearSocketError, messages } =
+    const { socket, allUsers, socketError, clearSocketError, messages, currentGroupUser } =
         useSocket(data?.idToken)
 
     // Initialize sticker functionality
@@ -142,6 +142,7 @@ export default function ChatRoom() {
                     currentUser={currentUser}
                     allUsers={allUsers}
                     groupName={activeRoomData?.name || "Group Chat"}
+                    currentGroupUser={currentGroupUser}
                 />
             </div>
         </div>
