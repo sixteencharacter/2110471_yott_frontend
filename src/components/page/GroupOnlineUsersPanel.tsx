@@ -10,6 +10,7 @@ interface GroupOnlineUsersPanelProps {
     currentUser?: Person | null
     allUsers?: Person[]
     groupName?: string
+    currentGroupUser? : Person[]
 }
 
 export default function GroupOnlineUsersPanel({
@@ -18,15 +19,16 @@ export default function GroupOnlineUsersPanel({
     currentUser,
     allUsers,
     groupName = "Group Chat",
+    currentGroupUser
 }: GroupOnlineUsersPanelProps) {
     const {
         rawUsers: groupUsers,
         loading,
         error,
-    } = useOnlineUsers(allUsers || [], currentUser || null, {
+    } = useOnlineUsers(allUsers || [], currentUser || null, currentGroupUser, {
         token,
         roomId,
-        fetchGroupUsers: true,
+        fetchGroupUsers: true
     })
 
     // Filter out current user and organize by status
