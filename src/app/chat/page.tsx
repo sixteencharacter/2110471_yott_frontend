@@ -54,12 +54,12 @@ export default function ChatRoom() {
     const activeRoomData = chatRooms.find((r) => r.cid === activeRoom)
     // Debug log
     React.useEffect(() => {
-        console.log(
+        /*console.log(
             "Chat Page - activeRoom:",
             activeRoom,
             "activeRoomData:",
             activeRoomData
-        )
+        )*/
     }, [activeRoom, activeRoomData])
 
     const {

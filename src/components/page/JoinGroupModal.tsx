@@ -47,7 +47,7 @@ const JoinGroupModal = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => { onJoinGroup(room.cid); console.log("joingroup",room.cid); onClose() }}
+                    onClick={() => { onJoinGroup(room.cid); onClose() }}
                     className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm"
                   >
                     Join

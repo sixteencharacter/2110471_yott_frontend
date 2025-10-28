@@ -127,9 +127,9 @@ export default function ChatSection({
     }, [activeRoomData?.cid])
 
   // Debug log to check if activeRoomData changes
-  useEffect(() => {
+  /*useEffect(() => {
     console.log("ChatSection - activeRoomData changed:", activeRoomData);
-  }, [activeRoomData]);
+  }, [activeRoomData]);*/
 
   
   

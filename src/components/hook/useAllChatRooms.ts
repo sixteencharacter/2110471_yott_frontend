@@ -13,7 +13,7 @@ export function useAllChatRooms() {
     useEffect(() => {
         const fetchAll = async () => {
           if (data?.idToken){
-            console.log("data",data)
+            //console.log("data",data)
             setLoading(true)
             setError(null)
             try {
@@ -22,7 +22,7 @@ export function useAllChatRooms() {
                 })
                 // Expect backend to return an array of chat objects
                 setAllChats(res.data || [])
-                console.log("useAllChatRooms fetched:", res.data)
+                //console.log("useAllChatRooms fetched:", res.data)
                 return res.data || []
             } catch (err: any) {
                 console.error("useAllChatRooms fetch error:", err)
