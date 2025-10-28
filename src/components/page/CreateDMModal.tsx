@@ -16,7 +16,7 @@ const CreateDMModal = ({
     onCreateDM: (newchatreq: newchatreq) => void
     allUsers: Person[]
 }) => {
-    const [searchTerm, setSearchTerm] = useState("")
+        const [searchTerm, setSearchTerm] = useState("")
         const [selectedUsers, setSelectedUsers] = useState<any[]>([])
         const [roomName, setRoomName] = useState("")
         const [chatType, setChatType] = useState<"dm" | "group">("dm")
