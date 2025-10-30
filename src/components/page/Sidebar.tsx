@@ -10,6 +10,7 @@ export default function Sidebar({
     setSearchTerm,
     showCreateDM,
     setShowCreateDM,
+    setShowJoiningGroupModal,
     groupRooms,
     privateRooms,
     activeRoom,
@@ -52,6 +53,12 @@ export default function Sidebar({
                     >
                         <Plus size={18} />
                         Direct Message
+                    </button>
+                    <button
+                        onClick={() => setShowJoiningGroupModal(true)}
+                        className="w-full flex items-center justify-center gap-2 bg-purple-400 hover:bg-purple-300 text-white font-serif py-2 rounded-lg transition-all duration-300"
+                    >
+                        Join Group
                     </button>
                 </div>
             </div>

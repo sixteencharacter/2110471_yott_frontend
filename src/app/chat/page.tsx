@@ -13,6 +13,7 @@ import { useSocket } from "@/components/hook/useSocket"
 import { useChatRooms } from "@/components/hook/useChatRooms"
 import { useCreateDM } from "@/components/hook/useCreateDM"
 import { useCurrentUser } from "@/components/hook/useCurrentUser"
+import JoinGroupModal from "@/components/page/JoinGroupModal"
 
 export default function ChatRoom() {
     // Initialize page state
@@ -30,6 +31,7 @@ export default function ChatRoom() {
     const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
         data?.idToken
     )
+    const [showJoiningGroupModal, setShowJoiningGroupModal] = useState(false)
 
     // Sync activeRoom with URL parameter
     React.useEffect(() => {
@@ -52,12 +54,12 @@ export default function ChatRoom() {
     const activeRoomData = chatRooms.find((r) => r.cid === activeRoom)
     // Debug log
     React.useEffect(() => {
-        console.log(
+        /*console.log(
             "Chat Page - activeRoom:",
             activeRoom,
             "activeRoomData:",
             activeRoomData
-        )
+        )*/
     }, [activeRoom, activeRoomData])
 
     const {
@@ -105,6 +107,13 @@ export default function ChatRoom() {
         router.push(`/chat?roomId=${roomId}`)
     }
 
+    const handleJoinGroup = (roomId: number) => {
+        if (socket) {
+            socket?.emit("chat_enroll", roomId)
+        }
+        refreshChatRooms()
+    }
+
     React.useEffect(() => {
         if (socket && activeRoom) {
             socket.emit("join_chat", activeRoom)
@@ -136,6 +145,7 @@ export default function ChatRoom() {
                 setSearchTerm={setSearchTerm}
                 showCreateDM={showCreateDM}
                 setShowCreateDM={setShowCreateDM}
+                setShowJoiningGroupModal={setShowJoiningGroupModal}
                 groupRooms={groupRooms}
                 privateRooms={privateRooms}
                 activeRoom={activeRoom}
@@ -181,6 +191,13 @@ export default function ChatRoom() {
                 stickerPacks={stickerPacks}
                 selectedPack={selectedPack}
                 onPackChange={setSelectedPack}
+            />
+
+            <JoinGroupModal
+                isOpen={showJoiningGroupModal}
+                onClose={() => setShowJoiningGroupModal(false)}
+                onJoinGroup={(cid) => handleJoinGroup(cid)}
+                groupRooms={groupRooms}
             />
         </div>
     )
