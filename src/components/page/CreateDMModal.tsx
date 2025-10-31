@@ -82,13 +82,13 @@ const CreateDMModal = ({
                                     // when switching to DM, ensure only one user remains selected
                                     setSelectedUsers((prev) => (prev && prev.length > 0 ? [prev[0]] : []))
                                 }}
-                                className={`px-3 py-1 rounded ${chatType === "dm" ? "bg-white text-purple-700 font-bold" : "bg-transparent text-white/80 border border-white/10"}`}
+                                className={`px-3 py-1 rounded ${chatType === "dm" ? "bg-white text-purple-700 font-bold" : "bg-transparent text-white/80 border border-white/10 hover:bg-white/15 transition-colors"}`}
                             >
                                 Direct Message
                             </button>
                             <button
                                 onClick={() => setChatType("group")}
-                                className={`px-3 py-1 rounded ${chatType === "group" ? "bg-white text-purple-700 font-bold" : "bg-transparent text-white/80 border border-white/10"}`}
+                                className={`px-3 py-1 rounded ${chatType === "group" ? "bg-white text-purple-700 font-bold" : "bg-transparent text-white/80 border border-white/10 hover:bg-white/15 transition-colors"}`}
                             >
                                 Group
                             </button>
@@ -196,7 +196,7 @@ const CreateDMModal = ({
                                 setSearchTerm("")
                                 setRoomName("")
                             }}
-                            className="px-3 py-2 rounded bg-transparent border border-white/20 text-white/80 hover:bg-white/5"
+                            className="px-3 py-2 rounded bg-transparent border border-white/20 text-white/80 hover:bg-white/15"
                         >
                             Clear
                         </button>
@@ -221,7 +221,7 @@ const CreateDMModal = ({
                                 onClose()
                             }}
                                 disabled={chatType === "dm" ? (!selectedUsers || selectedUsers.length === 0) : (roomName.trim() === "")}
-                                className={`px-4 py-2 rounded ${chatType === "dm" ? (!selectedUsers || selectedUsers.length === 0 ? "bg-white/10 text-white cursor-not-allowed" : "bg-white text-purple-700 font-bold") : (roomName.trim() === "" ? "bg-white/10 text-white cursor-not-allowed" : "bg-white text-purple-700 font-bold")}`}
+                        className={`px-4 py-2 rounded ${chatType === "dm" ? (!selectedUsers || selectedUsers.length === 0 ? "bg-white/10 text-white cursor-not-allowed" : "bg-white text-purple-700 font-bold hover:bg-white/80 transition-colors") : (roomName.trim() === "" ? "bg-white/10 text-white cursor-not-allowed" : "bg-white text-purple-700 font-bold hover:bg-white/80 transition-colors")}`}
                         >
                             {chatType === "dm" ? "Create Direct Message Chat Room" : "Create Group Chat Room"}
                         </button>
