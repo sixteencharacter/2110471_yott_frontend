@@ -4,4 +4,5 @@ export interface Message {
     timestamp: Date
     message: string
     cid: number
+    type : "message"|"sticker"
 }

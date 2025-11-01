@@ -27,6 +27,8 @@ export default function ChatSection({
     const prevSocketCountRef = useRef<number>(0)
     const prevChatDataCountRef = useRef<number>(0)
 
+    const stickerHost = process.env.NEXT_PUBLIC_STICKER_BASE;
+
     const scrollToBottom = (smooth = false) => {
         const el = messagesRef.current
         if (!el) return
@@ -167,6 +169,7 @@ export default function ChatSection({
         const messageData = {
             cid: activeRoomData.cid,
             message: message.trim(),
+            type : "message"
         }
 
         console.log("Sending message:", messageData)
@@ -245,9 +248,17 @@ export default function ChatSection({
                                                             ).toLocaleTimeString()}
                                                         </span>
                                                     </div>
-                                                    <p className="text-purple-800">
-                                                        {msg.message}
-                                                    </p>
+                                                    {(msg.type == "sticker") ? (
+                                                        <img 
+                                                            src={stickerHost + msg.message} 
+                                                            className="w-50 h-50 object-contain"
+                                                            onError={(e)=>{e.currentTarget.src = stickerHost + "/assets/stickers/fallback.png"}}
+                                                        />
+                                                    ) : (                                                        
+                                                        <p className="text-purple-800">
+                                                            {msg.message}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

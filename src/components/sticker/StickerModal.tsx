@@ -1,15 +1,15 @@
 "use client";
 import React from "react";
 import { X } from "lucide-react";
-import { StickerPacks, Sticker } from "./stickerData";
+import { StickerPacks, Sticker, StickerPack } from "./stickerData";
 
 interface StickerModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelectSticker: (sticker: Sticker) => void;
-    stickerPacks: StickerPacks;
-    selectedPack: string;
-    onPackChange: (packId: string) => void;
+    onSelectSticker: (sticker: string) => void;
+    stickerPacks: StickerPack[];
+    selectedPack: number;
+    onPackChange: (packId: number) => void;
 }
 
 export const StickerModal: React.FC<StickerModalProps> = ({
@@ -22,7 +22,8 @@ export const StickerModal: React.FC<StickerModalProps> = ({
 }) => {
     if (!isOpen) return null;
 
-    const currentPack = stickerPacks[selectedPack];
+    const currentPack = selectedPack;
+    const stickerHost = process.env.NEXT_PUBLIC_STICKER_BASE;
 
     // Close modal when clicking outside
     const handleOverlayClick = (e: React.MouseEvent) => {
@@ -41,7 +42,7 @@ export const StickerModal: React.FC<StickerModalProps> = ({
                 <div className="bg-purple-600 border-2 border-purple-500 rounded-lg p-6 space-y-4 shadow-2xl">
                     <div className="flex items-center justify-between">
                         <h2 className="text-2xl font-serif font-bold text-white">
-                            Stickers - {currentPack?.name}
+                            Stickers - {stickerPacks[currentPack].package}
                         </h2>
                         <button
                             onClick={onClose}
@@ -53,19 +54,19 @@ export const StickerModal: React.FC<StickerModalProps> = ({
 
                     {/* Sticker Pack Tabs */}
                     <div className="flex gap-2 overflow-x-auto">
-                        {Object.values(stickerPacks).map((pack) => (
+                        {Object.values(stickerPacks).map((pack,idx) => (
                             <button
-                                key={pack.id}
-                                onClick={() => onPackChange(pack.id)}
+                                key={pack.package}
+                                onClick={() => onPackChange(idx)}
                                 className={`flex-shrink-0 p-3 rounded-lg transition text-center ${
-                                    selectedPack === pack.id
+                                    selectedPack === idx
                                         ? "bg-purple-400 text-white"
                                         : "bg-purple-700 hover:bg-purple-500 text-white/70"
                                 }`}
-                                title={pack.name}
+                                title={pack.package}
                             >
                                 <span className="text-xl">
-                                    {pack.thumbnail}
+                                    {"S" + String(idx)}
                                 </span>
                             </button>
                         ))}
@@ -73,29 +74,21 @@ export const StickerModal: React.FC<StickerModalProps> = ({
 
                     {/* Stickers Grid */}
                     <div className="grid grid-cols-4 gap-4 max-h-80 overflow-y-auto">
-                        {currentPack?.stickers.map((sticker) => (
+                        {stickerPacks[currentPack].pictures.map((sticker) => (
                             <button
-                                key={sticker.id}
+                                key={sticker}
                                 onClick={() => {
                                     onSelectSticker(sticker);
                                     onClose();
                                 }}
                                 className="p-4 hover:bg-purple-500 rounded-lg transition text-center bg-purple-700 aspect-square flex items-center justify-center"
-                                title={sticker.name}
+                                title={sticker}
                             >
-                                {/* For now, show placeholder since we don't have actual sticker images */}
-                                <div className="w-16 h-16 bg-purple-400 rounded flex items-center justify-center">
-                                    <span className="text-sm text-white font-bold">
-                                        {sticker.name.substring(0, 3)}
-                                    </span>
-                                </div>
-                                {/* Uncomment when you have actual sticker images:
                             <img 
-                                src={sticker.url} 
-                                alt={sticker.name}
+                                src={stickerHost + sticker} 
+                                alt={sticker}
                                 className="w-12 h-12 object-contain"
                             />
-                            */}
                             </button>
                         ))}
                     </div>

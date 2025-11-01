@@ -1,23 +1,23 @@
 import { apiClient } from "@/lib/apiClient";
-import { Sticker, StickerPacks } from "./stickerData";
+import { Sticker, StickerPack, StickerPacks } from "./stickerData";
 
 export class StickerService {
     /**
      * Fetch sticker packs from the backend
      */
-    static async fetchStickerPacks(token: string): Promise<StickerPacks> {
-        // try {
-        //     const response = await apiClient.get("/v1/stickers", {
-        //         headers: {
-        //             Authorization: `Bearer ${token}`,
-        //         },
-        //     });
-        //     return response.data;
-        // } catch (error) {
-        //     console.error("Failed to fetch sticker packs:", error);
+    static async fetchStickerPacks(token: string): Promise<StickerPack[]> {
+        try {
+            const response = await apiClient.get("/v1/user/manifest", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return response.data["sticker"];
+        } catch (error) {
+            console.error("Failed to fetch sticker packs:", error);
+                return {} as StickerPack[]; // Placeholder to avoid TS error
         //     throw error;
-        // }
-        return {} as StickerPacks; // Placeholder to avoid TS error
+        }
     }
 
     /**
@@ -51,7 +51,7 @@ export class StickerService {
     static async sendStickerMessage(
         roomId: number,
         sticker: Sticker,
-        packId: string,
+        packId: Number,
         token: string
     ): Promise<any> {
         // try {

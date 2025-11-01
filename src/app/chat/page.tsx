@@ -3,7 +3,7 @@ import React, { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { YOTTLoading } from "@/components/loading"
-import { StickerModal, useSticker } from "@/components/sticker"
+import { StickerModal, StickerPack, StickerPacks, useSticker } from "@/components/sticker"
 import Sidebar from "@/components/page/Sidebar"
 import OnlineUsersPanel from "@/components/page/UsersPanel"
 import GroupOnlineUsersPanel from "@/components/page/GroupOnlineUsersPanel"
@@ -37,6 +37,9 @@ export default function ChatRoom() {
     React.useEffect(() => {
         if (roomId) {
             setActiveRoom(parseInt(roomId))
+        }
+        else {
+            setActiveRoom(undefined)
         }
     }, [roomId])
 
@@ -75,9 +78,7 @@ export default function ChatRoom() {
     } = useSticker({
         token: data?.idToken,
         roomId: activeRoomData?.cid,
-        onStickerSent: (sticker) => {
-            console.log("Sticker sent:", sticker)
-        },
+        socket
     })
 
     // Get current user and other users
@@ -170,7 +171,7 @@ export default function ChatRoom() {
                     roomId={activeRoom}
                     currentUser={currentUser}
                     allUsers={allUsers}
-                    groupName={activeRoomData?.name || "Group Chat"}
+                    groupName={activeRoomData?.name || "Online Users"}
                     currentGroupUser={currentGroupUser}
                 />
             </div>
@@ -188,7 +189,7 @@ export default function ChatRoom() {
                 isOpen={showStickerModal}
                 onClose={closeStickerModal}
                 onSelectSticker={handleSelectSticker}
-                stickerPacks={stickerPacks}
+                stickerPacks={stickerPacks ?? []}
                 selectedPack={selectedPack}
                 onPackChange={setSelectedPack}
             />
