@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Hash, Lock, Smile, Play } from "lucide-react"
+import { Hash, Lock, Smile, Play, MessageSquare, Users, Wifi } from "lucide-react"
 import { Message } from "@/types/message"
 import { useChatRoom } from "@/components/hook/useChatContent"
 import { useSession } from "next-auth/react"
@@ -128,13 +128,13 @@ export default function ChatSection({
         }
     }, [activeRoomData?.cid])
 
-  // Debug log to check if activeRoomData changes
-  /*useEffect(() => {
-    console.log("ChatSection - activeRoomData changed:", activeRoomData);
-  }, [activeRoomData]);*/
+    // Debug log to check if activeRoomData changes
+    /*useEffect(() => {
+      console.log("ChatSection - activeRoomData changed:", activeRoomData);
+    }, [activeRoomData]);*/
 
-  
-  
+
+
     // Merge server history + realtime socket messages for current room
     const socketRoomMessages = allMessages.filter(
         (msg: Message) => msg.cid === activeRoomData?.cid
@@ -169,7 +169,7 @@ export default function ChatSection({
         const messageData = {
             cid: activeRoomData.cid,
             message: message.trim(),
-            type : "message"
+            type: "message"
         }
 
         console.log("Sending message:", messageData)
@@ -188,7 +188,71 @@ export default function ChatSection({
 
     // Messages are now handled centrally in useSocket hook
     return (
-        <div className="flex-1 bg-purple-100 rounded-lg shadow-lg flex flex-col">
+        <div className="flex-1 bg-purple-100 rounded-lg shadow-lg flex flex-col overflow-y-hidden">
+            {(activeRoomData === undefined) && (
+                <>
+                    <div className="border-b border-purple-300 p-4 bg-white flex-1 justify-center items-center flex-col w-full h-auto rounded-t-lg">
+                        <div className="max-w-full mx-auto">
+                            {/* Header */}
+                            <div className="flex items-center justify-center mb-12 mt-3">
+                                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mr-4">
+                                    <MessageSquare className="w-6 h-6 text-white" />
+                                </div>
+                                <h1 className="text-xl font-bold text-purple-700">Get Started in 3 Easy Steps</h1>
+                            </div>
+
+                            {/* Steps Row */}
+                            <div className="flex gap-6 mb-8">
+                                {/* Step 1 */}
+                                <div className="flex-1 bg-white/60 backdrop-blur rounded-3xl p-8 border-2 border-purple-200">
+                                    <div className="inline-block bg-purple-200 text-purple-700 font-bold px-4 py-1 rounded-full text-sm mb-6">
+                                        STEP 1
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-purple-700 mb-4">Find a Friend</h2>
+                                    <p className="text-purple-600 text-lg leading-relaxed">
+                                        Use "Direct Message" and their User ID to start a chat.
+                                    </p>
+                                </div>
+
+                                {/* Step 2 */}
+                                <div className="flex-1 bg-white/60 backdrop-blur rounded-3xl p-8 border-2 border-purple-200">
+                                    <div className="inline-block bg-purple-200 text-purple-700 font-bold px-4 py-1 rounded-full text-sm mb-6">
+                                        STEP 2
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-purple-700 mb-4">Join a Group</h2>
+                                    <p className="text-purple-600 text-lg leading-relaxed">
+                                        Click "Join Group" to explore public channels.
+                                    </p>
+                                </div>
+
+                                {/* Step 3 */}
+                                <div className="flex-1 bg-white/60 backdrop-blur rounded-3xl p-8 border-2 border-purple-200">
+                                    <div className="inline-block bg-purple-200 text-purple-700 font-bold px-4 py-1 rounded-full text-sm mb-6">
+                                        STEP 3
+                                    </div>
+                                    <h2 className="text-xl font-bold text-purple-700 mb-4">See Who's Here</h2>
+                                    <p className="text-purple-600 text-lg leading-relaxed">
+                                        The "Online Users" list shows who is active right now.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Bible Verse Section */}
+                            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl p-8 text-white shadow-lg">
+                                <div className="max-w-xl mx-auto text-center">
+                                    <div className="text-6xl mb-4 opacity-50">"</div>
+                                    <p className="text-md font-light leading-relaxed mb-6 italic">
+                                        Two are better than one, because they have a good return for their labor: If either of them falls down, one can help the other up.
+                                    </p>
+                                    <p className="text-purple-200 text-lg font-medium">
+                                        — Ecclesiastes 4:9-10
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
             {activeRoomData && (
                 <>
                     {/* Room Header */}
@@ -244,17 +308,17 @@ export default function ChatSection({
                                                         <span className="text-xs text-purple-500">
                                                             {new Date(
                                                                 msg.timestamp ||
-                                                                    Date.now()
+                                                                Date.now()
                                                             ).toLocaleTimeString()}
                                                         </span>
                                                     </div>
                                                     {(msg.type == "sticker") ? (
-                                                        <img 
-                                                            src={stickerHost + msg.message} 
+                                                        <img
+                                                            src={stickerHost + msg.message}
                                                             className="w-50 h-50 object-contain"
-                                                            onError={(e)=>{e.currentTarget.src = stickerHost + "/assets/stickers/fallback.png"}}
+                                                            onError={(e) => { e.currentTarget.src = stickerHost + "/assets/stickers/fallback.png" }}
                                                         />
-                                                    ) : (                                                        
+                                                    ) : (
                                                         <p className="text-purple-800">
                                                             {msg.message}
                                                         </p>
