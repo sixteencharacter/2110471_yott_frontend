@@ -28,9 +28,6 @@ export default function ChatRoom() {
     )
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
-    const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
-        data?.idToken
-    )
     const [showJoiningGroupModal, setShowJoiningGroupModal] = useState(false)
 
     // Sync activeRoom with URL parameter
@@ -51,19 +48,12 @@ export default function ChatRoom() {
         clearSocketError,
         messages,
         currentGroupUser,
+        availableChat,
+        chatInited
     } = useSocket(data?.idToken)
 
     // Initialize sticker functionality
-    const activeRoomData = chatRooms.find((r) => r.cid === activeRoom)
-    // Debug log
-    React.useEffect(() => {
-        /*console.log(
-            "Chat Page - activeRoom:",
-            activeRoom,
-            "activeRoomData:",
-            activeRoomData
-        )*/
-    }, [activeRoom, activeRoomData])
+    const activeRoomData = availableChat.find((r) => r.cid === activeRoom)
 
     const {
         stickerPacks,
@@ -86,13 +76,12 @@ export default function ChatRoom() {
 
     const handleCreateDM = useCreateDM(
         socket,
-        chatRooms,
+        availableChat,
         setActiveRoom,
-        currentUser,
-        refreshChatRooms
+        currentUser
     )
 
-    const filteredRooms = chatRooms.filter((room) =>
+    const filteredRooms = availableChat.filter((room) =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
@@ -112,7 +101,6 @@ export default function ChatRoom() {
         if (socket) {
             socket?.emit("chat_enroll", roomId)
         }
-        refreshChatRooms()
     }
 
     React.useEffect(() => {
@@ -123,7 +111,7 @@ export default function ChatRoom() {
 
     return (
         <div className="h-screen flex bg-purple-200 gap-4 p-4">
-            <YOTTLoading show={!isInited} />
+            <YOTTLoading show={!chatInited} />
 
             {/* Error Notification */}
             {socketError && (

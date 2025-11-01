@@ -1,3 +1,4 @@
+import { Chat } from "@/types/chat"
 import { Person } from "@/types/person"
 import { send } from "process"
 import { useEffect, useState } from "react"
@@ -7,8 +8,10 @@ export function useSocket(token?: string) {
     const [socket, setSocket] = useState<Socket | null>(null)
     const [allUsers, setAllUsers] = useState<Person[]>([])
     const [currentGroupUser , setcurrentGroupUser] = useState<Person[]>([]);
-    const [socketError, setSocketError] = useState<string | null>(null)
-    const [messages, setMessages] = useState<any[]>([])
+    const [socketError, setSocketError] = useState<string | null>(null);
+    const [messages, setMessages] = useState<any[]>([]);
+    const [availableChat,setAvailableChat] = useState<Chat[]>([]);
+    const [chatInited,setChatInited] = useState<boolean>(false);
 
     useEffect(() => {
         if (!token) return
@@ -64,6 +67,11 @@ export function useSocket(token?: string) {
             setcurrentGroupUser(messagedata);
         })
 
+        socketConnection.on("available_chat",(messageData)=>{
+            setChatInited(true)
+            setAvailableChat((val)=>((val?.length ?? 0) > messageData.length)? val : messageData)
+        })
+
         return () => {
             socketConnection.disconnect()
         }
@@ -88,6 +96,8 @@ export function useSocket(token?: string) {
         socketError,
         clearSocketError,
         messages,
-        currentGroupUser
+        currentGroupUser,
+        availableChat,
+        chatInited
     }
 }

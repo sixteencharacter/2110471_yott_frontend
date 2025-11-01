@@ -33,5 +33,5 @@ export function useChatRooms(token?: string) {
         fetchChatRooms()
     }, [token])
 
-    return { chatRooms, isInited, refreshChatRooms: fetchChatRooms }
+    return { chatRooms, setChatRooms , isInited, refreshChatRooms: fetchChatRooms }
 }
