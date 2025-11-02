@@ -24,7 +24,7 @@ export function useCreateDM(
                     const chatName = `${nameParts}${displayPart}`.trim()
 
                     const data = {
-                        chat_name: chatName || other?.display_name || "",
+                        chat_name: currentUser?.display_name + " ↔ " + other?.display_name,
                         is_groupchat: false,
                         member_ids: [currentUser?.uid, other?.uid],
                     }

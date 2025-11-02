@@ -38,6 +38,7 @@ export function useChatRoom(cid?: number | null, token?: string, limit: number =
                 timestamp: m.timestamp ?? m.created_at ?? null,
                 message: m.msg_content ?? m.text ?? m.message ?? "",
                 cid: m.cid ?? cid,
+                type: m.type ?? "message"
             })) as Message[]
 
             // Flip the order so that the first is last and last is first (newest-first)

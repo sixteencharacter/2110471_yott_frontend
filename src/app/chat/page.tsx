@@ -3,7 +3,7 @@ import React, { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { YOTTLoading } from "@/components/loading"
-import { StickerModal, useSticker } from "@/components/sticker"
+import { StickerModal, StickerPack, StickerPacks, useSticker } from "@/components/sticker"
 import Sidebar from "@/components/page/Sidebar"
 import OnlineUsersPanel from "@/components/page/UsersPanel"
 import GroupOnlineUsersPanel from "@/components/page/GroupOnlineUsersPanel"
@@ -28,15 +28,15 @@ export default function ChatRoom() {
     )
     const [showCreateDM, setShowCreateDM] = useState(false)
     const [searchTerm, setSearchTerm] = useState("")
-    const { chatRooms, isInited, refreshChatRooms } = useChatRooms(
-        data?.idToken
-    )
     const [showJoiningGroupModal, setShowJoiningGroupModal] = useState(false)
 
     // Sync activeRoom with URL parameter
     React.useEffect(() => {
         if (roomId) {
             setActiveRoom(parseInt(roomId))
+        }
+        else {
+            setActiveRoom(undefined)
         }
     }, [roomId])
 
@@ -48,19 +48,12 @@ export default function ChatRoom() {
         clearSocketError,
         messages,
         currentGroupUser,
+        availableChat,
+        chatInited
     } = useSocket(data?.idToken)
 
     // Initialize sticker functionality
-    const activeRoomData = chatRooms.find((r) => r.cid === activeRoom)
-    // Debug log
-    React.useEffect(() => {
-        /*console.log(
-            "Chat Page - activeRoom:",
-            activeRoom,
-            "activeRoomData:",
-            activeRoomData
-        )*/
-    }, [activeRoom, activeRoomData])
+    const activeRoomData = availableChat.find((r) => r.cid === activeRoom)
 
     const {
         stickerPacks,
@@ -75,9 +68,7 @@ export default function ChatRoom() {
     } = useSticker({
         token: data?.idToken,
         roomId: activeRoomData?.cid,
-        onStickerSent: (sticker) => {
-            console.log("Sticker sent:", sticker)
-        },
+        socket
     })
 
     // Get current user and other users
@@ -85,13 +76,12 @@ export default function ChatRoom() {
 
     const handleCreateDM = useCreateDM(
         socket,
-        chatRooms,
+        availableChat,
         setActiveRoom,
-        currentUser,
-        refreshChatRooms
+        currentUser
     )
 
-    const filteredRooms = chatRooms.filter((room) =>
+    const filteredRooms = availableChat.filter((room) =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
@@ -111,7 +101,6 @@ export default function ChatRoom() {
         if (socket) {
             socket?.emit("chat_enroll", roomId)
         }
-        refreshChatRooms()
     }
 
     React.useEffect(() => {
@@ -122,7 +111,7 @@ export default function ChatRoom() {
 
     return (
         <div className="h-screen flex bg-purple-200 gap-4 p-4">
-            <YOTTLoading show={!isInited} />
+            <YOTTLoading show={!chatInited} />
 
             {/* Error Notification */}
             {socketError && (
@@ -170,7 +159,7 @@ export default function ChatRoom() {
                     roomId={activeRoom}
                     currentUser={currentUser}
                     allUsers={allUsers}
-                    groupName={activeRoomData?.name || "Group Chat"}
+                    groupName={activeRoomData?.name || "Online Users"}
                     currentGroupUser={currentGroupUser}
                 />
             </div>
@@ -188,7 +177,7 @@ export default function ChatRoom() {
                 isOpen={showStickerModal}
                 onClose={closeStickerModal}
                 onSelectSticker={handleSelectSticker}
-                stickerPacks={stickerPacks}
+                stickerPacks={stickerPacks ?? []}
                 selectedPack={selectedPack}
                 onPackChange={setSelectedPack}
             />

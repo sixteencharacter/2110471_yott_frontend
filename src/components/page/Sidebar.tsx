@@ -1,9 +1,10 @@
 "use client"
 import React from "react"
-import { LogOut, Plus, Search } from "lucide-react"
+import { Home, LogOut, Plus, Search } from "lucide-react"
 import { signOut } from "next-auth/react"
 import ChatRoomItem from "./ChatRoomItem"
 import { Chat } from "@/types/chat"
+import Link from "next/link"
 
 export default function Sidebar({
     searchTerm,
@@ -62,13 +63,25 @@ export default function Sidebar({
                     </button>
                 </div>
             </div>
+            {/* Home */}
+            <div className="p-3 space-y-4 text-white/60">
+                <Link
+                    href={"/chat"}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-all flex items-center gap-2 ${(activeRoom === undefined)
+                            ? "bg-purple-400 text-white"
+                            : "text-white/70 hover:bg-purple-400/30 hover:text-white"
+                        }`}>
+                    <Home size={18} className="flex-shrink-0" />
+                    <span className="font-serif font-semibold truncate flex-1">Home</span>
+                </Link>
+            </div>
             {/* Chat Rooms */}
             <div className="flex-1 overflow-y-auto p-3 space-y-4">
                 {/* Group Chats */}
                 {groupRooms.length > 0 && (
                     <div className="space-y-2">
                         <h3 className="text-xs font-serif font-bold text-white/60 uppercase tracking-wider px-2 py-1">
-                            Channels
+                            GroupChat
                         </h3>
                         <div className="space-y-1">
                             {groupRooms.map((room: Chat) => (

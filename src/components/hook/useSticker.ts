@@ -1,22 +1,23 @@
 "use client";
 import { useState, useEffect } from "react";
-import { mockStickerPacks, StickerPacks, Sticker } from "./stickerData";
-import { StickerService } from "./stickerService";
+import { StickerPacks, Sticker, StickerPack } from "../sticker/stickerData";
+import { StickerService } from "../sticker/stickerService";
+import { Socket } from "socket.io-client";
 
 interface UseStickerProps {
     token?: string;
     roomId?: number;
-    onStickerSent?: (sticker: Sticker) => void;
+    socket? : Socket|null
 }
 
 export const useSticker = ({
     token,
     roomId,
-    onStickerSent,
+    socket
 }: UseStickerProps = {}) => {
     const [stickerPacks, setStickerPacks] =
-        useState<StickerPacks>(mockStickerPacks);
-    const [selectedPack, setSelectedPack] = useState<string>("basic");
+        useState<StickerPack[]>();
+    const [selectedPack, setSelectedPack] = useState<number>(0);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export const useSticker = ({
 
         try {
             const fetchedPacks = await StickerService.fetchStickerPacks(token);
+            console.log(fetchedPacks)
             setStickerPacks(fetchedPacks);
         } catch (err) {
             console.error("Using mock data due to fetch error:", err);
@@ -46,27 +48,14 @@ export const useSticker = ({
         }
     };
 
-    const handleSelectSticker = async (sticker: Sticker) => {
+    const handleSelectSticker = async (sticker: string) => {
         console.log("Selected sticker:", sticker);
-
-        // If we have roomId and token, send the sticker as a message
-        if (roomId && token) {
-            try {
-                await StickerService.sendStickerMessage(
-                    roomId,
-                    sticker,
-                    selectedPack,
-                    token
-                );
-                onStickerSent?.(sticker);
-            } catch (error) {
-                console.error("Failed to send sticker:", error);
-                setError("Failed to send sticker");
-            }
-        } else {
-            // Just notify parent component
-            onStickerSent?.(sticker);
+        const messageData = {
+            cid: roomId,
+            message: sticker,
+            type : "sticker"
         }
+        socket?.emit("send_message", messageData)
     };
 
     const openModal = () => setShowModal(true);
