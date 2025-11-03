@@ -295,44 +295,52 @@ export default function ChatSection({
                         break
                     }
 
-                    // Decode the chunk and add to accumulated text
-                    const chunk = decoder.decode(value, { stream: true })
-                    responseText += chunk
+                    // Decode the chunk and parse Server-Sent Events format
+                    const chunkText = decoder.decode(value, { stream: true })
+                    console.log("Received chunk:", chunkText)
 
-                    // Try to parse as JSON and extract paraphrased text
-                    try {
-                        const jsonResponse = JSON.parse(responseText)
-                        if (jsonResponse.paraphrased) {
-                            // Remove extra quotes that might come with the response
-                            const cleanedText =
-                                jsonResponse.paraphrased.replace(/^"|"$/g, "")
-                            setMessage(cleanedText)
+                    // Handle Server-Sent Events format: "data: {...}"
+                    const lines = chunkText.split("\n")
+                    for (const line of lines) {
+                        if (line.startsWith("data: ")) {
+                            try {
+                                // Extract JSON part after "data: "
+                                const jsonPart = line.substring(6) // Remove "data: " prefix
+                                const chunkData = JSON.parse(jsonPart)
+
+                                if (chunkData.accumulated) {
+                                    // Use the accumulated text directly and remove extra quotes
+                                    const cleanedText =
+                                        chunkData.accumulated.replace(
+                                            /^"|"$/g,
+                                            ""
+                                        )
+                                    setMessage(cleanedText)
+                                    responseText = chunkData.accumulated
+                                    console.log(
+                                        "Parsed accumulated text:",
+                                        cleanedText
+                                    )
+                                }
+                            } catch (parseError) {
+                                console.log(
+                                    "Could not parse SSE data line:",
+                                    line,
+                                    parseError
+                                )
+                            }
+                        } else if (line.trim()) {
+                            // Accumulate non-data lines for fallback
+                            responseText += line
                         }
-                    } catch (parseError) {
-                        // If not valid JSON yet, continue accumulating
-                        // This handles streaming JSON responses
-                        console.log("Partial JSON, continuing...")
                     }
                 }
 
-                // Final parse attempt for complete response
-                try {
-                    const finalResponse = JSON.parse(responseText)
-                    if (finalResponse.paraphrased) {
-                        // Remove extra quotes that might come with the response
-                        const cleanedText = finalResponse.paraphrased.replace(
-                            /^"|"$/g,
-                            ""
-                        )
-                        setMessage(cleanedText)
-                    }
-                } catch (finalParseError) {
-                    console.error(
-                        "Failed to parse final response as JSON:",
-                        finalParseError
-                    )
-                    // Fallback to raw text if JSON parsing fails
-                    setMessage(responseText)
+                // Final cleanup - responseText should already contain the final accumulated text
+                if (responseText) {
+                    const cleanedText = responseText.replace(/^"|"$/g, "")
+                    setMessage(cleanedText)
+                    console.log("Final paraphrased text:", cleanedText)
                 }
             } finally {
                 reader.releaseLock()
