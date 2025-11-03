@@ -255,11 +255,12 @@ export default function ChatSection({
                 text: message.trim(),
                 style: style,
             })
-            console.log(process.env.BACKEND_URL)
+            console.log(process.env.NEXT_PUBLIC_BACKEND_URL)
             // Use fetch for proper streaming support as per Next.js discussion
             const response = await fetch(
                 `${
-                    process.env.BACKEND_URL || "http://localhost:8000"
+                    process.env.NEXT_PUBLIC_BACKEND_URL ||
+                    "http://localhost:8000"
                 }/v1/paraphrase/${style}`,
                 {
                     method: "POST",
