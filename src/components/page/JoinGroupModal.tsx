@@ -117,8 +117,8 @@ const JoinGroupModal = ({
 
   if (!isOpen) return null
 
-  const existingCids = new Set((groupRooms || []).map((r: Chat) => r.cid))
-  const groups = (allChats || []).filter((c: Chat) => !!c.is_groupchat && !existingCids.has(c.cid))
+  const existingCids = new Set((groupRooms.filter(val=>val.is_own) || []).map((r: Chat) => r.cid))
+  const groups = (allChats || []).filter((c: Chat) => !!c.is_groupchat && !existingCids.has(c.cid) && !c.is_own)
   const filtered = groups.filter((g: Chat) => (g.name || `Channel ${g.cid}`).toLowerCase().includes(searchTerm.toLowerCase()))
 
   return (
