@@ -2,8 +2,104 @@
 import React, { useEffect, useState } from "react";
 import { Chat } from "@/types/chat";
 import useAllChatRooms from "@/components/hook/useAllChatRooms";
-import { Search, X } from "lucide-react";
+import { Search, X, Users } from "lucide-react";
 import { UserAvatar } from "../userAvatar";
+import { Person } from "@/types/person";
+import { apiClient } from "@/lib/apiClient";
+import { useSession } from "next-auth/react";
+import { useSocket } from "@/components/hook/useSocket";
+
+// Component to display group member preview
+const GroupMemberPreview = ({ groupId }: { groupId: number }) => {
+  const { data: session } = useSession();
+  const { socket, currentGroupUser } = useSocket(session?.idToken);
+  const [members, setMembers] = useState<Person[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!socket || !groupId) return;
+
+    setLoading(true);
+
+    // Listen for chat_member events
+    const handleChatMember = (memberData: Person[]) => {
+      console.log("Received chat members:", memberData);
+      setMembers(memberData || []);
+      setLoading(false);
+    };
+    console.log("Requesting members for groupId:", groupId);
+    // Request group members via socket
+    socket.emit("chat_member", groupId);
+
+    // Listen for the response
+    console.log("Listening for chat_member_update for groupId:", groupId);
+    socket.on("chat_member_update", handleChatMember);
+    return () => {
+      console.log("Stopping listening for chat_member_update for groupId:", groupId);
+      socket.off("chat_member_update", handleChatMember);
+    };
+  }, [socket, groupId]);
+
+  // Also update when currentGroupUser changes (for current active room)
+  useEffect(() => {
+    if (currentGroupUser && currentGroupUser.length > 0) {
+      setMembers(currentGroupUser);
+      setLoading(false);
+    }
+  }, [currentGroupUser]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-white/60 text-xs">
+        <Users size={14} />
+        <span>Loading members...</span>
+      </div>
+    );
+  }
+
+  if (members.length === 0) {
+    return (
+      <div className="flex items-center gap-2 text-white/60 text-xs">
+        <Users size={14} />
+        <span>No members</span>
+      </div>
+    );
+  }
+
+  const displayedMembers = members.slice(0, 5);
+  const remainingCount = Math.max(0, members.length - 5);
+
+  return (
+    <div className="flex items-center gap-2">
+      <Users size={14} className="text-white/60" />
+      <div className="flex items-center gap-1">
+        <div className="flex -space-x-2">
+          {displayedMembers.map((member, index) => (
+            <div
+              key={member.uid || index}
+              className="border-2 border-purple-600 rounded-full"
+              style={{ zIndex: displayedMembers.length - index }}
+            >
+              <UserAvatar
+                name={member.given_name || member.display_name || 'Unknown'}
+                isOnline={member.status === 'online'}
+                size="xs"
+              />
+            </div>
+          ))}
+        </div>
+        {remainingCount > 0 && (
+          <span className="text-xs text-white/80 ml-2 font-medium">
+            +{remainingCount}
+          </span>
+        )}
+        <span className="text-xs text-white/60 ml-1">
+          ({members.length} member{members.length !== 1 ? 's' : ''})
+        </span>
+      </div>
+    </div>
+  );
+};
 
 const JoinGroupModal = ({
   isOpen,
@@ -60,12 +156,13 @@ const JoinGroupModal = ({
         ) : (
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {filtered.map((room: Chat) => (
-              <div key={room.cid} className="flex items-center justify-between p-2 rounded">
-                <div className="flex items-center gap-3">
+              <div key={room.cid} className="flex items-center justify-between p-3 rounded-lg hover:bg-purple-500/20 transition-colors">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   <UserAvatar name={room.name || `Channel ${room.cid}`} isOnline={false} size="md" />
-                  <div>
-                    <div className="font-medium text-white">{room.name || `Channel ${room.cid}`}</div>
-                    <div className="text-xs text-white/60">ID: {room.cid}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-white truncate">{room.name || `Channel ${room.cid}`}</div>
+                    <div className="text-xs text-white/60 mb-1">ID: {room.cid}</div>
+                    <GroupMemberPreview groupId={room.cid} />
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
