@@ -198,7 +198,19 @@ export default function ChatSection({
         (msg: Message) => msg.cid === activeRoomData?.cid
     )
 
-    const roomMessages = [...(chatData || []), ...socketRoomMessages]
+    const roomMessages = [
+    ...(chatData || []),
+    ...socketRoomMessages.filter(
+        (socketMsg: Message) => !(chatData || []).some(
+            (chatMsg: Message) =>
+                // Deduplicate by a composite key (sender id + timestamp + message text)
+                chatMsg.s_id === socketMsg.s_id &&
+                new Date(chatMsg.timestamp).getTime() ===
+                    new Date(socketMsg.timestamp).getTime() &&
+                chatMsg.message === socketMsg.message
+        )
+    ),
+]
 
     // Auto-scroll behavior: when a new realtime message arrives, or when initial
     // chatData is loaded, scroll to bottom. Do NOT jump when older pages are prepended.

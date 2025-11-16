@@ -15,7 +15,7 @@ export function useSocket(token?: string) {
 
     useEffect(() => {
         if (!token) return
-        const socketConnection = io("http://localhost:8000", {
+        const socketConnection = io("https://api.yott.me/", {
             autoConnect: true,
             reconnection: true,
             reconnectionDelay: 1000,
