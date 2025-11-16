@@ -112,13 +112,13 @@ const JoinGroupModal = ({
   onJoinGroup: (groupCode: number) => void
   groupRooms: Chat[]
 }) => {
-  const { allChats, loading, error } = useAllChatRooms()
+
   const [searchTerm, setSearchTerm] = useState("")
 
   if (!isOpen) return null
 
   const existingCids = new Set((groupRooms.filter(val=>val.is_own) || []).map((r: Chat) => r.cid))
-  const groups = (allChats || []).filter((c: Chat) => !!c.is_groupchat && !existingCids.has(c.cid) && !c.is_own)
+  const groups = (groupRooms || []).filter((c: Chat) => !!c.is_groupchat && !existingCids.has(c.cid))
   const filtered = groups.filter((g: Chat) => (g.name || `Channel ${g.cid}`).toLowerCase().includes(searchTerm.toLowerCase()))
 
   return (
@@ -144,14 +144,7 @@ const JoinGroupModal = ({
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="loading-spinner mr-2" />
-            <span className="text-white">Loading channels...</span>
-          </div>
-        ) : error ? (
-          <p className="text-sm text-red-300">{error}</p>
-        ) : filtered.length === 0 ? (
+        {filtered.length === 0 ? (
           <p className="text-sm text-white/90">No channels available</p>
         ) : (
           <div className="space-y-2 max-h-64 overflow-y-auto">
