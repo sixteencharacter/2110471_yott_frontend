@@ -1,13 +1,193 @@
 "use client"
-import { signOut, useSession } from "next-auth/react";
-import Image from "next/image";
+import React, { useState } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { YOTTLoading } from "@/components/loading"
+import { StickerModal, StickerPack, StickerPacks, useSticker } from "@/components/sticker"
+import Sidebar from "@/components/page/Sidebar"
+import OnlineUsersPanel from "@/components/page/UsersPanel"
+import GroupOnlineUsersPanel from "@/components/page/GroupOnlineUsersPanel"
+import ChatSection from "@/components/page/ChatSection"
+import CreateDMModal from "@/components/page/CreateDMModal"
+import { useSocket } from "@/components/hook/useSocket"
+import { useChatRooms } from "@/components/hook/useChatRooms"
+import { useCreateDM } from "@/components/hook/useCreateDM"
+import { useCurrentUser } from "@/components/hook/useCurrentUser"
+import JoinGroupModal from "@/components/page/JoinGroupModal"
 
-export default function Home() {
-  // const {update , data , status} = useSession()
-  return (
-    <div className="flex items-center justify-center min-h-screen w-full bg-white">
-      {/* <p>LoggedIn as {data?.user?.name}</p> */}
-      <button className="px-5 py-2 w-auto bg-indigo-500 text-white rounded-md" onClick={()=>signOut({'callbackUrl' : '/auth/login'})}>Signout</button>
-    </div>
-  );
+export default function ChatRoom() {
+    // Initialize page state
+    const { data, update, status } = useSession()
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const roomId = searchParams.get("roomId")
+
+    // Initialize React state - use roomId from URL
+    const [activeRoom, setActiveRoom] = useState(
+        roomId ? parseInt(roomId) : undefined
+    )
+    const [showCreateDM, setShowCreateDM] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
+    const [showJoiningGroupModal, setShowJoiningGroupModal] = useState(false)
+
+    // Sync activeRoom with URL parameter
+    React.useEffect(() => {
+        if (roomId) {
+            setActiveRoom(parseInt(roomId))
+        }
+        else {
+            setActiveRoom(undefined)
+        }
+    }, [roomId])
+
+    // Socket Initialization
+    const {
+        socket,
+        allUsers,
+        socketError,
+        clearSocketError,
+        messages,
+        currentGroupUser,
+        availableChat,
+        chatInited
+    } = useSocket(data?.idToken)
+
+    // Initialize sticker functionality
+    const activeRoomData = availableChat.find((r) => r.cid === activeRoom)
+
+    const {
+        stickerPacks,
+        selectedPack,
+        setSelectedPack,
+        showModal: showStickerModal,
+        openModal: openStickerModal,
+        closeModal: closeStickerModal,
+        handleSelectSticker,
+        loading: stickerLoading,
+        error: stickerError,
+    } = useSticker({
+        token: data?.idToken,
+        roomId: activeRoomData?.cid,
+        socket
+    })
+
+    // Get current user and other users
+    const { currentUser, otherUsers } = useCurrentUser(allUsers, data?.user)
+
+    const handleCreateDM = useCreateDM(
+        socket,
+        availableChat,
+        setActiveRoom,
+        currentUser
+    )
+
+    const filteredRooms = availableChat.filter((room) =>
+        room.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
+    const groupRooms = filteredRooms.filter((r) => r.is_groupchat === true)
+    const privateRooms = filteredRooms.filter((r) => r.is_groupchat === false)
+
+    // Handle room selection within chat page
+    const handleRoomSelect = (roomId: number) => {
+        if (socket) {
+            socket?.emit("join_chat", roomId)
+        }
+        setActiveRoom(roomId)
+        router.push(`/chat?roomId=${roomId}`)
+    }
+
+    const handleJoinGroup = (roomId: number) => {
+        if (socket) {
+            socket?.emit("chat_enroll", roomId)
+        }
+    }
+
+    React.useEffect(() => {
+        if (socket && activeRoom) {
+            socket.emit("join_chat", activeRoom)
+        }
+    }, [socket, activeRoom])
+
+    return (
+        <div className="h-screen flex bg-purple-200 gap-4 p-4">
+            <YOTTLoading show={!chatInited} />
+
+            {/* Error Notification */}
+            {socketError && (
+                <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+                    <div className="flex items-center gap-2">
+                        <span>{socketError}</span>
+                        <button
+                            onClick={clearSocketError}
+                            className="text-white hover:text-gray-200"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Sidebar - merged from AppLayoutWrapper */}
+            <Sidebar
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                showCreateDM={showCreateDM}
+                setShowCreateDM={setShowCreateDM}
+                setShowJoiningGroupModal={setShowJoiningGroupModal}
+                groupRooms={groupRooms}
+                privateRooms={privateRooms}
+                activeRoom={activeRoom}
+                setActiveRoom={handleRoomSelect}
+            />
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex gap-4">
+                {/* Chat Area */}
+                <ChatSection
+                    key={activeRoom} // Force re-render when room changes
+                    activeRoomData={activeRoomData}
+                    openStickerModal={openStickerModal}
+                    socket={socket}
+                    currentUser={currentUser}
+                    messages={messages}
+                />
+
+                {/* Group Members Panel */}
+                <GroupOnlineUsersPanel
+                    token={data?.idToken}
+                    roomId={activeRoom}
+                    currentUser={currentUser}
+                    allUsers={allUsers}
+                    groupName={activeRoomData?.name || "Online Users"}
+                    currentGroupUser={currentGroupUser}
+                />
+            </div>
+
+            {/* Create DM Modal - merged from AppLayoutWrapper */}
+            <CreateDMModal
+                isOpen={showCreateDM}
+                onClose={() => setShowCreateDM(false)}
+                onCreateDM={handleCreateDM}
+                allUsers={otherUsers}
+            />
+
+            {/* Sticker Modal - merged from AppLayoutWrapper */}
+            <StickerModal
+                isOpen={showStickerModal}
+                onClose={closeStickerModal}
+                onSelectSticker={handleSelectSticker}
+                stickerPacks={stickerPacks ?? []}
+                selectedPack={selectedPack}
+                onPackChange={setSelectedPack}
+            />
+
+            <JoinGroupModal
+                isOpen={showJoiningGroupModal}
+                onClose={() => setShowJoiningGroupModal(false)}
+                onJoinGroup={(cid) => handleJoinGroup(cid)}
+                groupRooms={groupRooms}
+            />
+        </div>
+    )
 }
