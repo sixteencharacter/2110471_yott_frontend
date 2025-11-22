@@ -84,7 +84,7 @@ export default function Sidebar({
                             GroupChat
                         </h3>
                         <div className="space-y-1">
-                            {groupRooms.map((room: Chat) => (
+                            {groupRooms.filter((val : Chat)=>val.is_own).map((room: Chat) => (
                                 <ChatRoomItem
                                     key={room.cid}
                                     room={room}
@@ -102,7 +102,7 @@ export default function Sidebar({
                             Direct Messages
                         </h3>
                         <div className="space-y-1">
-                            {privateRooms.map((room: Chat) => (
+                            {privateRooms.filter((val : Chat)=>val.is_own).map((room: Chat) => (
                                 <ChatRoomItem
                                     key={room.cid}
                                     room={room}
